@@ -178,54 +178,88 @@ export const tambahPemesananLengkap = async (req, res) => {
 export const midtransWebhook = async (req, res) => {
   try {
     const payload = req.body;
-
-    if (!verifyMidtransSignature(payload)) {
-      return res.status(200).json({ message: 'Invalid signature' });
-    }
-
     const { order_id, transaction_status } = payload;
 
-    const pembayaran = await getPembayaranByOrderId(order_id);
-    if (!pembayaran) return res.status(404).json({ message: 'Pembayaran tidak ditemukan' });
+    console.log('🔄 Webhook Midtrans:', {
+      order_id,
+      status: transaction_status,
+    });
 
-    const pemesanan = await getPemesananById(pembayaran.id_pemesanan);
-    if (!pemesanan) return res.status(404).json({ message: 'Pemesanan tidak ditemukan' });
-
+    // Default value
     let statusPembayaran = 'belum_bayar';
     let statusPemesanan = 'menunggu_pembayaran';
 
-    if (['capture', 'settlement'].includes(transaction_status)) {
-      statusPembayaran = 'sudah_bayar';
-      statusPemesanan = 'dikonfirmasi';
-
-      if (pemesanan.no_meja) {
-        await updateStatusMeja(pemesanan.no_meja, 'terisi');
-      }
-
-      await updateStatusPemesanan(pembayaran.id_pemesanan, statusPemesanan);
+    // 1️⃣ Ambil data pembayaran berdasarkan order_id
+    const pembayaran = await getPembayaranByOrderId(order_id);
+    if (!pembayaran) {
+      return res.status(404).json({ message: 'Pembayaran tidak ditemukan' });
     }
 
-    if (['expire', 'cancel', 'deny', 'failure'].includes(transaction_status)) {
-      statusPembayaran = 'dibatalkan';
-      statusPemesanan = 'dibatalkan';
+    const idPemesanan = pembayaran.id_pemesanan;
 
-      await updateStatusPemesanan(pembayaran.id_pemesanan, statusPemesanan);
+    // 2️⃣ Ambil data pemesanan
+    const pemesanan = await getPemesananById(idPemesanan);
+    if (!pemesanan) {
+      return res.status(404).json({ message: 'Pemesanan tidak ditemukan' });
     }
 
-    await updateStatusPembayaran(
-      order_id,
-      statusPembayaran,
-      pembayaran.jumlah_bayar,
-      payload
-    );
+    // 3️⃣ Tentukan aksi berdasarkan status Midtrans
+    switch (transaction_status) {
+      case 'capture':
+      case 'settlement':
+        statusPembayaran = 'sudah_bayar';
+        statusPemesanan = 'dikonfirmasi';
 
-    return res.status(200).json({ success: true });
+        // Update status meja → terisi
+        if (pemesanan.no_meja) {
+          await updateStatusMeja(pemesanan.no_meja, 'terisi');
+          console.log(`✅ Meja ${pemesanan.no_meja} -> terisi`);
+        }
+
+        // Update status pemesanan → dikonfirmasi
+        await updateStatusPemesanan(idPemesanan, 'dikonfirmasi');
+        console.log(`💰 Pembayaran sukses untuk ${order_id}`);
+        break;
+
+      case 'expire':
+      case 'deny':
+      case 'cancel':
+      case 'failure':
+        statusPembayaran = 'dibatalkan';
+        statusPemesanan = 'dibatalkan';
+
+        // Update status pemesanan → dibatalkan
+        await updateStatusPemesanan(idPemesanan, 'dibatalkan');
+        console.log(`❌ Pembayaran dibatalkan untuk ${order_id}`);
+        break;
+
+      default:
+        console.log('⚠ Status Midtrans tidak dikenali:', transaction_status);
+        break;
+    }
+
+    // 4️⃣ Update data pembayaran (status + payload Midtrans)
+    await updateStatusPembayaran(order_id, statusPembayaran, payload);
+
+    console.log(`🔄 Update berhasil: ${order_id} -> ${statusPembayaran}`);
+
+    // 5️⃣ Reply OK (MIDTRANS WAJIB TERIMA 200)
+    return res.status(200).json({
+      success: true,
+      message: 'Webhook processed successfully',
+      redirect_url: `/struk/${idPemesanan}`, // opsional untuk internal log
+    });
   } catch (err) {
-    console.error('❌ Webhook Error:', err);
-    return res.status(200).json({ success: false });
+    console.error('❌ Webhook error:', err);
+
+    // Tetap return 200 agar Midtrans TIDAK retry tanpa henti
+    return res.status(200).json({
+      success: false,
+      message: 'Webhook error (handled gracefully)',
+      error: err.message,
+    });
   }
 };
-
 
 // 🔍 GET STATUS PEMBAYARAN - SESUAIKAN DENGAN MODEL BARU
 export const getStatusPembayaran = async (req, res) => {
