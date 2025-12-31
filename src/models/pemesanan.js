@@ -57,13 +57,17 @@ export const addPemesanan = (data) => {
   });
 };
 
-// ✅ TAMBAH FUNGSI BARU: Get pemesanan by order_id
 export const getPemesananByOrderId = (order_id) => {
   return new Promise((resolve, reject) => {
     const sql = `
-      SELECT p.* 
-      FROM pemesanan p
-      JOIN pembayaran pb ON p.id_pemesanan = pb.id_pemesanan
+      SELECT 
+        p.id_pemesanan,
+        p.id_reservasi,
+        p.no_meja,
+        p.status_pemesanan,
+        pb.status_pembayaran
+      FROM pembayaran pb
+      JOIN pemesanan p ON pb.id_pemesanan = p.id_pemesanan
       WHERE pb.order_id = ?
     `;
     db.query(sql, [order_id], (err, result) => {
