@@ -23,5 +23,5 @@ initRoutes(app);
 
 // Jalankan server
 app.listen(PORT, () => {
-  console.log(`🚀 Server jalan di: http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
