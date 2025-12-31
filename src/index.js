@@ -9,6 +9,7 @@ import berandaRoutes from './routes/beranda-route.js';
 import eventRoutes from './routes/event-route.js';
 import laporanRoutes from './routes/laporan-route.js';
 import berandaPelangganRoutes from './routes/berandaPelanggan-route.js';
+import webhookRoutes from './routes/webhook-route.js';
 
 export const initRoutes = (app) => {
   app.use('/api/auth', authRoutes);
@@ -22,4 +23,5 @@ export const initRoutes = (app) => {
   app.use('/api/event', eventRoutes);
   app.use('/api/laporan', laporanRoutes);
   app.use('/api/beranda-pelanggan', berandaPelangganRoutes);
+  app.use('/api/webhook', webhookRoutes);
 };
