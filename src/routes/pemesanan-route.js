@@ -1,5 +1,5 @@
 import express from 'express';
-import { ambilMejaById, ambilSemuaMetodePembayaran, tambahPemesananLengkap, getStatusPembayaran, getDetailStruk, midtransWebhook, getListPemesanan, hapusPemesanan, updatePemesanan } from '../controllers/pemesanan.js';
+import { ambilMejaById, ambilSemuaMetodePembayaran, tambahPemesananLengkap, getStatusPembayaran, getDetailStruk getListPemesanan, hapusPemesanan, updatePemesanan } from '../controllers/pemesanan.js';
 import { simulatePaymentSuccess } from '../controllers/tes.js';
 import { getDetailPemesanan } from '../controllers/pemesanan.js';
 
@@ -11,7 +11,6 @@ router.get('/metode-pembayaran', ambilSemuaMetodePembayaran);
 // ✅ ROUTE LAINNYA
 router.get('/list-pemesanan', getListPemesanan);
 router.post('/add-pemesanan', tambahPemesananLengkap);
-router.post('/midtrans-webhook', midtransWebhook);
 router.post('/simulate-payment', simulatePaymentSuccess);
 router.get('/status/:orderId', getStatusPembayaran);
 router.get('/detail/:id_pemesanan', getDetailStruk);
