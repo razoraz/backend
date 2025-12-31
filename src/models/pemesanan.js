@@ -74,10 +74,10 @@ export const getPemesananByOrderId = (order_id) => {
 };
 
 // ✅ TAMBAH FUNGSI: Update status pemesanan
-export const updateStatusPemesanan = (id_pemesanan, status) => {
+export const updateStatusPemesanan = (id_pemesanan, status_pemesanan) => {
   return new Promise((resolve, reject) => {
     const sql = 'UPDATE pemesanan SET status_pemesanan = ? WHERE id_pemesanan = ?';
-    db.query(sql, [status, id_pemesanan], (err, result) => {
+    db.query(sql, [status_pemesanan, id_pemesanan], (err, result) => {
       if (err) reject(err);
       else resolve(result);
     });
