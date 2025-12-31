@@ -186,8 +186,8 @@ export const midtransWebhook = async (req, res) => {
     });
 
     // Default value
-    let statusPembayaran = 'belum_bayar';
-    let statusPemesanan = 'menunggu_pembayaran';
+    let status_pembayaran = 'belum_bayar';
+    let status_pemesanan = 'menunggu_pembayaran';
 
     // 1️⃣ Ambil data pembayaran berdasarkan order_id
     const pembayaran = await getPembayaranByOrderId(order_id);
@@ -207,8 +207,8 @@ export const midtransWebhook = async (req, res) => {
     switch (transaction_status) {
       case 'capture':
       case 'settlement':
-        statusPembayaran = 'sudah_bayar';
-        statusPemesanan = 'dikonfirmasi';
+        status_pembayaran = 'sudah_bayar';
+        status_pemesanan = 'dikonfirmasi';
 
         // Update status meja → terisi
         if (pemesanan.no_meja) {
@@ -225,8 +225,8 @@ export const midtransWebhook = async (req, res) => {
       case 'deny':
       case 'cancel':
       case 'failure':
-        statusPembayaran = 'dibatalkan';
-        statusPemesanan = 'dibatalkan';
+        status_pembayaran = 'dibatalkan';
+        status_pemesanan = 'dibatalkan';
 
         // Update status pemesanan → dibatalkan
         await updateStatusPemesanan(idPemesanan, 'dibatalkan');
@@ -239,9 +239,9 @@ export const midtransWebhook = async (req, res) => {
     }
 
     // 4️⃣ Update data pembayaran (status + payload Midtrans)
-    await updateStatusPembayaran(order_id, statusPembayaran, payload);
+    await updateStatusPembayaran(order_id, status_pembayaran, payload);
 
-    console.log(`🔄 Update berhasil: ${order_id} -> ${statusPembayaran}`);
+    console.log(`🔄 Update berhasil: ${order_id} -> ${status_pembayaran}`);
 
     // 5️⃣ Reply OK (MIDTRANS WAJIB TERIMA 200)
     return res.status(200).json({
