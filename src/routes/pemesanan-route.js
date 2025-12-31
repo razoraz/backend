@@ -1,5 +1,5 @@
 import express from 'express';
-import { ambilMejaById, ambilSemuaMetodePembayaran, tambahPemesananLengkap, getStatusPembayaran, getDetailStruk getListPemesanan, hapusPemesanan, updatePemesanan } from '../controllers/pemesanan.js';
+import { ambilMejaById, ambilSemuaMetodePembayaran, tambahPemesananLengkap, getStatusPembayaran, getDetailStruk, getListPemesanan, hapusPemesanan, updatePemesanan } from '../controllers/pemesanan.js';
 import { simulatePaymentSuccess } from '../controllers/tes.js';
 import { getDetailPemesanan } from '../controllers/pemesanan.js';
 
