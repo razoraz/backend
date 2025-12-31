@@ -49,7 +49,7 @@ export const getPembayaranByPemesananId = (id_pemesanan) => {
 };
 
 // ✅ PERBAIKI: Update status pembayaran
-export const updateStatusPembayaran = (order_id, status, jumlah_bayar, midtrans_response = {}) => {
+export const updateStatusPembayaran = (order_id, status_pembayaran, jumlah_bayar, midtrans_response = {}) => {
   return new Promise((resolve, reject) => {
     const sql = `
       UPDATE pembayaran
@@ -61,7 +61,7 @@ export const updateStatusPembayaran = (order_id, status, jumlah_bayar, midtrans_
       WHERE order_id = ?
     `;
 
-    db.query(sql, [status, jumlah_bayar, JSON.stringify(midtrans_response), order_id], (err, result) => {
+    db.query(sql, [status_pembayaran, jumlah_bayar, JSON.stringify(midtrans_response), order_id], (err, result) => {
       if (err) reject(err);
       else resolve(result);
     });
