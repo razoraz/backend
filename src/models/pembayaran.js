@@ -58,7 +58,8 @@ export const updateStatusPembayaran = (order_id, status_pembayaran, midtrans_res
       UPDATE pembayaran
       SET 
         status_pembayaran = ?, 
-        midtrans_response = ?
+        midtrans_response = ?,
+        waktu_bayar = NOW()
       WHERE order_id = ?
     `;
 
