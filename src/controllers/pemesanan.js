@@ -175,6 +175,7 @@ export const tambahPemesananLengkap = async (req, res) => {
 };
 
 // 🔄 WEBHOOK MIDTRANS - SESUAIKAN ENUM
+// controllers/pemesananController.js - PERBAIKI fungsi midtransWebhook
 export const midtransWebhook = async (req, res) => {
   try {
     const payload = req.body;
@@ -183,6 +184,7 @@ export const midtransWebhook = async (req, res) => {
     console.log('🔄 Webhook Midtrans:', {
       order_id,
       status: transaction_status,
+      timestamp: new Date().toISOString()
     });
 
     // Default value
@@ -192,7 +194,11 @@ export const midtransWebhook = async (req, res) => {
     // 1️⃣ Ambil data pembayaran berdasarkan order_id
     const pembayaran = await getPembayaranByOrderId(order_id);
     if (!pembayaran) {
-      return res.status(404).json({ message: 'Pembayaran tidak ditemukan' });
+      console.error(`❌ Pembayaran tidak ditemukan untuk order_id: ${order_id}`);
+      return res.status(200).json({ 
+        success: false, 
+        message: 'Pembayaran tidak ditemukan' 
+      });
     }
 
     const idPemesanan = pembayaran.id_pemesanan;
@@ -200,8 +206,18 @@ export const midtransWebhook = async (req, res) => {
     // 2️⃣ Ambil data pemesanan
     const pemesanan = await getPemesananById(idPemesanan);
     if (!pemesanan) {
-      return res.status(404).json({ message: 'Pemesanan tidak ditemukan' });
+      console.error(`❌ Pemesanan tidak ditemukan untuk id: ${idPemesanan}`);
+      return res.status(200).json({ 
+        success: false, 
+        message: 'Pemesanan tidak ditemukan' 
+      });
     }
+
+    console.log('📊 Data ditemukan:', {
+      pembayaran_status: pembayaran.status_pembayaran,
+      pemesanan_status: pemesanan.status_pemesanan,
+      no_meja: pemesanan.no_meja
+    });
 
     // 3️⃣ Tentukan aksi berdasarkan status Midtrans
     switch (transaction_status) {
@@ -221,6 +237,13 @@ export const midtransWebhook = async (req, res) => {
         console.log(`💰 Pembayaran sukses untuk ${order_id}`);
         break;
 
+      // ✅ TAMBAHKAN CASE 'pending' YANG HILANG!
+      case 'pending':
+        status_pembayaran = 'pending';
+        status_pemesanan = 'menunggu_pembayaran';
+        console.log(`⏳ Pembayaran pending untuk ${order_id}`);
+        break;
+
       case 'expire':
       case 'deny':
       case 'cancel':
@@ -235,28 +258,44 @@ export const midtransWebhook = async (req, res) => {
 
       default:
         console.log('⚠ Status Midtrans tidak dikenali:', transaction_status);
+        // Tetap update dengan status default
+        status_pembayaran = 'belum_bayar';
+        status_pemesanan = 'menunggu_pembayaran';
         break;
     }
 
     // 4️⃣ Update data pembayaran (status + payload Midtrans)
+    console.log(`🔄 Updating pembayaran: ${order_id} -> ${status_pembayaran}`);
+    
+    // PERBAIKAN: Sesuaikan dengan fungsi model yang sudah diperbaiki
     await updateStatusPembayaran(order_id, status_pembayaran, payload);
 
-    console.log(`🔄 Update berhasil: ${order_id} -> ${status_pembayaran}`);
+    console.log(`✅ Update berhasil: ${order_id} -> ${status_pembayaran}`);
 
     // 5️⃣ Reply OK (MIDTRANS WAJIB TERIMA 200)
     return res.status(200).json({
       success: true,
       message: 'Webhook processed successfully',
-      redirect_url: `/struk/${idPemesanan}`, // opsional untuk internal log
+      order_id: order_id,
+      status_pembayaran: status_pembayaran,
+      status_pemesanan: status_pemesanan,
+      timestamp: new Date().toISOString()
     });
   } catch (err) {
     console.error('❌ Webhook error:', err);
+    console.error('Error details:', {
+      message: err.message,
+      sql: err.sql,
+      code: err.code,
+      stack: err.stack
+    });
 
     // Tetap return 200 agar Midtrans TIDAK retry tanpa henti
     return res.status(200).json({
       success: false,
       message: 'Webhook error (handled gracefully)',
       error: err.message,
+      timestamp: new Date().toISOString()
     });
   }
 };
