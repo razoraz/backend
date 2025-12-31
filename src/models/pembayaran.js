@@ -49,21 +49,31 @@ export const getPembayaranByPemesananId = (id_pemesanan) => {
 };
 
 // ✅ PERBAIKI: Update status pembayaran
-export const updateStatusPembayaran = (order_id, status_pembayaran, jumlah_bayar, midtrans_response = {}) => {
+// ALTERNATIF: Jika hanya ingin update status dan simpan response
+export const updateStatusPembayaran = (order_id, status_pembayaran, midtrans_response = {}) => {
   return new Promise((resolve, reject) => {
+    console.log(`📌 [MODEL] Updating payment status only: ${order_id} -> ${status_pembayaran}`);
+    
     const sql = `
       UPDATE pembayaran
       SET 
         status_pembayaran = ?, 
-        jumlah_bayar = ?, 
-        midtrans_response = ?, 
-        waktu_bayar = NOW()
+        midtrans_response = ?
       WHERE order_id = ?
     `;
 
-    db.query(sql, [status_pembayaran, jumlah_bayar, JSON.stringify(midtrans_response), order_id], (err, result) => {
-      if (err) reject(err);
-      else resolve(result);
+    db.query(sql, [
+      status_pembayaran, 
+      JSON.stringify(midtrans_response), 
+      order_id
+    ], (err, result) => {
+      if (err) {
+        console.error(`❌ [MODEL] Error:`, err);
+        reject(err);
+      } else {
+        console.log(`✅ [MODEL] Update successful`);
+        resolve(result);
+      }
     });
   });
 };
