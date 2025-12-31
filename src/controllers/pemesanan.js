@@ -176,7 +176,6 @@ export const tambahPemesananLengkap = async (req, res) => {
 
 // 🔄 WEBHOOK MIDTRANS - SESUAIKAN ENUM
 export const midtransWebhook = async (req, res) => {
-  console.log('🔔 MIDTRANS WEBHOOK HIT:', req.body);
   try {
     const payload = req.body;
 
