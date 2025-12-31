@@ -9,7 +9,6 @@ import Meja from '../models/meja.js';
 const SECRET_KEY = 'BASECAMP_KOPI_01';
 
 const mejaController = {
-
   // Mengambil semua data meja
   getAll: async (req, res) => {
     try {
@@ -74,31 +73,31 @@ const mejaController = {
 
   // Generate QR Code
   generateQRCodeByNoMeja: async (req, res) => {
-  try {
-    const { no_meja } = req.params;
+    try {
+      const { no_meja } = req.params;
 
-    const meja = await Meja.getByNo(no_meja);
-    if (!meja) return res.status(404).json({ error: 'Meja tidak ditemukan' });
+      const meja = await Meja.getByNo(no_meja);
+      if (!meja) return res.status(404).json({ error: 'Meja tidak ditemukan' });
 
-    // ambil URL dari env
-    const FRONTEND_URL = process.env.VITE_FRONTEND_URL || 'http://localhost:5173';
+      // ambil URL dari env
+      const FRONTEND_URL = process.env.VITE_FRONTEND_URL || 'https://frontend-basecamp.vercel.app';
 
-    // URL lengkap beserta token
-    const url = `${FRONTEND_URL}/form-pemesanan?token=${meja.token}`;
+      // URL lengkap beserta token
+      const url = `${FRONTEND_URL}/form-pemesanan?token=${meja.token}`;
 
-    // generate QR
-    const qrImage = await QRCode.toDataURL(url);
+      // generate QR
+      const qrImage = await QRCode.toDataURL(url);
 
-    res.json({
-      meja: meja.no_meja,
-      token: meja.token,
-      url,
-      qrImage,
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-},
+      res.json({
+        meja: meja.no_meja,
+        token: meja.token,
+        url,
+        qrImage,
+      });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  },
 
   // Verifikasi Token Meja
   verifyToken: async (req, res) => {
