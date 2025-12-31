@@ -128,7 +128,7 @@ export const tambahPemesananLengkap = async (req, res) => {
           gross_amount: parseInt(total_harga),
         },
         callbacks: {
-          finish: `http://localhost:5173/struk/${id_pemesanan}`,
+          finish: `https://frontend-basecamp.vercel.app//struk/${id_pemesanan}`,
         },
       });
 
