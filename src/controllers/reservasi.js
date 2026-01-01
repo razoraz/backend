@@ -1,9 +1,9 @@
 import { addReservasi, getAllReservasiWithPayment, deleteReservasiById, getDetailReservasi, getDetailItemReservasi, updateReservasiModel } from '../models/reservasi.js';
 import { addPemesanan, updateStatusPemesanan, updateStatusMeja } from '../models/pemesanan.js';
 import { addDetailPemesanan } from '../models/detail_pemesanan.js';
-import { addPembayaran, updateStatusPembayaranAdmin } from '../models/pembayaran.js';
+import { addPembayaran, updateStatusPembayaranAdmin, getPembayaranWithMetode } from '../models/pembayaran.js';
 import midtransClient from 'midtrans-client';
-import Meja from '../models/meja.js';
+
 
 // Setup Midtrans Snap
 const snap = new midtransClient.Snap({
