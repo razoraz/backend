@@ -424,7 +424,10 @@ export const getDetailPemesanan = async (req, res) => {
 
 export const updatePemesanan = async (req, res) => {
   const { id_pemesanan } = req.params;
-  const { status_pemesanan, status_pembayaran } = req.body;
+  const { status_pemesanan, status_pembayaran, id_admin } = req.body; // ⭐ TAMBAHKAN id_admin
+
+  console.log('📥 Request body:', req.body);
+  console.log('👤 id_admin dari request:', id_admin);
 
   try {
     const existing = await getPemesananById(id_pemesanan);
@@ -434,29 +437,39 @@ export const updatePemesanan = async (req, res) => {
 
     // 🔎 Ambil metode pembayaran
     const pembayaran = await getPembayaranWithMetode(id_pemesanan);
+    console.log('💰 Metode pembayaran:', pembayaran?.nama_metode);
 
     // Update status pemesanan
     if (status_pemesanan) {
       await updateStatusPemesanan(id_pemesanan, status_pemesanan);
     }
 
-    // 🔐 LOGIKA SIMPLE:
-    // - Jika tunai & sudah_bayar → simpan id_admin dari request body
-    // - Lainnya → id_admin = null
+    // 🔐 LOGIKA: Tentukan apakah harus simpan id_admin
+    let adminIdUntukPembayaran = null;
+
+    // ⭐ LOGIKA UTAMA: Hanya simpan id_admin jika:
+    // 1. Pembayaran tunai di kasir
+    // 2. Status diubah menjadi 'sudah_bayar'
+    // 3. Ada id_admin dari request
+    if (status_pembayaran === 'sudah_bayar' && 
+        pembayaran?.nama_metode === 'Tunai di Kasir' &&
+        id_admin) {
+      
+      adminIdUntukPembayaran = id_admin;
+      console.log(`✅ Akan menyimpan id_admin: ${id_admin} untuk pembayaran tunai`);
+    } else {
+      console.log(`ℹ️ id_admin tetap null. Alasan:`);
+      console.log(`   - Status pembayaran: ${status_pembayaran}`);
+      console.log(`   - Metode: ${pembayaran?.nama_metode}`);
+      console.log(`   - id_admin dari request: ${id_admin}`);
+    }
+
+    // Update status pembayaran dengan id_admin
     if (status_pembayaran) {
-      let id_admin = null;
-      
-      // Hanya simpan id_admin jika: tunai & sudah_bayar & ada id_admin di body
-      if (status_pembayaran === 'sudah_bayar' && 
-          pembayaran?.nama_metode === 'Tunai di Kasir' &&
-          req.body.id_admin) {
-        id_admin = req.body.id_admin;
-      }
-      
       await updateStatusPembayaranAdmin(
         id_pemesanan,
         status_pembayaran,
-        id_admin  // ✅ null untuk QRIS, id_admin untuk tunai
+        adminIdUntukPembayaran  // ⭐ null untuk QRIS, id_admin untuk tunai
       );
     }
 
@@ -467,10 +480,12 @@ export const updatePemesanan = async (req, res) => {
       await updateStatusMeja(existing.no_meja, 'tersedia');
     }
 
-    res.json({ message: 'Pemesanan berhasil diperbarui' });
+    res.json({ 
+      message: 'Pemesanan berhasil diperbarui',
+      id_admin_dicatat: adminIdUntukPembayaran 
+    });
   } catch (err) {
-    console.error(err);
+    console.error('❌ Error updatePemesanan:', err);
     res.status(500).json({ message: 'Gagal update pemesanan' });
   }
 };
-
