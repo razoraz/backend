@@ -79,20 +79,31 @@ export const updateStatusPembayaran = (order_id, status_pembayaran, midtrans_res
   });
 };
 
-export const updateStatusPembayaranAdmin = (id_pemesanan, status_pembayaran = {}) => {
+export const updateStatusPembayaranAdmin = (
+  id_pemesanan,
+  status_pembayaran,
+  id_admin = null
+) => {
   return new Promise((resolve, reject) => {
     const sql = `
       UPDATE pembayaran
       SET 
-      status_pembayaran = ?,
-      waktu_bayar = NOW() WHERE id_pemesanan = ?
+        status_pembayaran = ?,
+        id_admin = ?,
+        waktu_bayar = IF(? = 'sudah_bayar', NOW(), waktu_bayar)
+      WHERE id_pemesanan = ?
     `;
-    db.query(sql, [status_pembayaran, id_pemesanan], (err, result) => {
-      if (err) return reject(err);
-      resolve(result);
-    });
+    db.query(
+      sql,
+      [status_pembayaran, id_admin, status_pembayaran, id_pemesanan],
+      (err, result) => {
+        if (err) return reject(err);
+        resolve(result);
+      }
+    );
   });
 };
+
 
 // Fungsi untuk menghapus data pembayaran berdasarkan ID pemesanan
 export const deletePembayaranByPemesananId = (id_pemesanan) => {
@@ -131,3 +142,23 @@ export const getPemesananPembayaranByOrderId = (order_id) => {
     });
   });
 };
+
+export const getPembayaranWithMetode = (id_pemesanan) => {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT 
+        pb.id_pembayaran,
+        pb.status_pembayaran,
+        mp.nama_metode
+      FROM pembayaran pb
+      JOIN metode_pembayaran mp 
+        ON mp.id_metode = pb.id_metode
+      WHERE pb.id_pemesanan = ?
+    `;
+    db.query(sql, [id_pemesanan], (err, rows) => {
+      if (err) return reject(err);
+      resolve(rows[0]);
+    });
+  });
+};
+
