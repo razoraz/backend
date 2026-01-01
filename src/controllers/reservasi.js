@@ -71,7 +71,7 @@ export const addReservasiLengkap = async (req, res) => {
       const order_id = `ORDER-${Date.now()}-${id_pemesanan}`;
       const transaction = await snap.createTransaction({
         transaction_details: { order_id, gross_amount: parseInt(total_harga) },
-        callbacks: { finish: `http://localhost:5173/struk/${id_pemesanan}` },
+        callbacks: { finish: `https://frontend-basecamp.vercel.app/struk/${id_pemesanan}` },
       });
 
       const redirect_url = transaction.token ? `https://app.sandbox.midtrans.com/snap/v4/redirection/${transaction.token}#/other-qris` : transaction.redirect_url;
