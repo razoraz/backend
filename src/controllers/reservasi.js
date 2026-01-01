@@ -1,5 +1,5 @@
 import { addReservasi, getAllReservasiWithPayment, deleteReservasiById, getDetailReservasi, getDetailItemReservasi, updateReservasiModel } from '../models/reservasi.js';
-import { addPemesanan, updateStatusPemesanan } from '../models/pemesanan.js';
+import { addPemesanan, updateStatusPemesanan, updateStatusMeja } from '../models/pemesanan.js';
 import { addDetailPemesanan } from '../models/detail_pemesanan.js';
 import { addPembayaran, updateStatusPembayaranAdmin } from '../models/pembayaran.js';
 import midtransClient from 'midtrans-client';
@@ -181,20 +181,24 @@ export const updateReservasi = async (req, res) => {
       
       if (status_reservasi === 'menunggu_konfirmasi') {
         // Reservasi dibuat, menunggu admin konfirmasi
-        await Meja.update(no_meja, { status_meja: 'dipesan' });
+        await updateStatusMeja(no_meja, 'dipesan');
+        console.log(`✅ Meja ${no_meja} -> dipesan`);
       }
       else if (status_reservasi === 'menunggu_pembayaran') {
         // Sudah dikonfirmasi, tunggu pembayaran (deposit)
-        await Meja.update(no_meja, { status_meja: 'dipesan' });
+        await updateStatusMeja(no_meja, 'dipesan');
+        console.log(`✅ Meja ${no_meja} -> dipesan`);
       }
       else if (status_reservasi === 'dikonfirmasi') {
         // Pembayaran lunas/konfirmasi final
         const mejaStatus = isToday ? 'terisi' : 'dipesan';
-        await Meja.update(no_meja, { status_meja: mejaStatus });
+        await updateStatusMeja(no_meja, mejaStatus);
+        console.log(`✅ Meja ${no_meja} -> ${mejaStatus}`);
       }
       else if (status_reservasi === 'selesai' || status_reservasi === 'dibatalkan') {
         // Selesai atau batal -> meja tersedia lagi
-        await Meja.update(no_meja, { status_meja: 'tersedia' });
+        await updateStatusMeja(no_meja, 'tersedia');
+        console.log(`✅ Meja ${no_meja} -> tersedia`);
       }
     }
 
