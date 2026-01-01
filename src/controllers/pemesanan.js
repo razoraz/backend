@@ -426,48 +426,44 @@ export const updatePemesanan = async (req, res) => {
   const { id_pemesanan } = req.params;
   const { status_pemesanan, status_pembayaran } = req.body;
 
-  const id_admin = req.user?.id_admin; // dari login admin
-
   try {
     const existing = await getPemesananById(id_pemesanan);
     if (!existing) {
       return res.status(404).json({ message: 'Pemesanan tidak ditemukan' });
     }
 
-    // Update status pemesanan
-    await updateStatusPemesanan(id_pemesanan, status_pemesanan);
-
     // 🔎 Ambil metode pembayaran
     const pembayaran = await getPembayaranWithMetode(id_pemesanan);
 
-    // 🔐 LOGIKA UTAMA
-    if (
-      status_pembayaran === 'sudah_bayar' &&
-      pembayaran?.nama_metode === 'Tunai di Kasir' &&
-      id_admin
-    ) {
+    // Update status pemesanan
+    if (status_pemesanan) {
+      await updateStatusPemesanan(id_pemesanan, status_pemesanan);
+    }
+
+    // 🔐 LOGIKA SIMPLE:
+    // - Jika tunai & sudah_bayar → simpan id_admin dari request body
+    // - Lainnya → id_admin = null
+    if (status_pembayaran) {
+      let id_admin = null;
+      
+      // Hanya simpan id_admin jika: tunai & sudah_bayar & ada id_admin di body
+      if (status_pembayaran === 'sudah_bayar' && 
+          pembayaran?.nama_metode === 'Tunai di Kasir' &&
+          req.body.id_admin) {
+        id_admin = req.body.id_admin;
+      }
+      
       await updateStatusPembayaranAdmin(
         id_pemesanan,
         status_pembayaran,
-        id_admin
-      );
-    } 
-    // 🔥 selain tunai → TIDAK simpan id_admin
-    else if (status_pembayaran) {
-      await updateStatusPembayaranAdmin(
-        id_pemesanan,
-        status_pembayaran,
-        null
+        id_admin  // ✅ null untuk QRIS, id_admin untuk tunai
       );
     }
 
     // Update status meja
     if (status_pemesanan === 'dikonfirmasi') {
       await updateStatusMeja(existing.no_meja, 'terisi');
-    } else if (
-      status_pemesanan === 'selesai' ||
-      status_pemesanan === 'dibatalkan'
-    ) {
+    } else if (status_pemesanan === 'selesai' || status_pemesanan === 'dibatalkan') {
       await updateStatusMeja(existing.no_meja, 'tersedia');
     }
 
