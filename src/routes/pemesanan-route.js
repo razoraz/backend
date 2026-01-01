@@ -2,6 +2,7 @@ import express from 'express';
 import { ambilMejaById, ambilSemuaMetodePembayaran, tambahPemesananLengkap, getStatusPembayaran, getDetailStruk, getListPemesanan, hapusPemesanan, updatePemesanan } from '../controllers/pemesanan.js';
 import { simulatePaymentSuccess } from '../controllers/tes.js';
 import { getDetailPemesanan } from '../controllers/pemesanan.js';
+import { authAdmin } from '../middleware/authAdmin.js';
 
 const router = express.Router();
 
@@ -14,7 +15,7 @@ router.post('/add-pemesanan', tambahPemesananLengkap);
 router.post('/simulate-payment', simulatePaymentSuccess);
 router.get('/status/:orderId', getStatusPembayaran);
 router.get('/detail/:id_pemesanan', getDetailStruk);
-router.put('/update-pemesanan/:id_pemesanan', updatePemesanan);
+router.put('/update-pemesanan/:id_pemesanan', authAdmin, updatePemesanan);
 router.delete('/delete-pemesanan/:id_pemesanan', hapusPemesanan);
 router.get('/detail-pemesanan/:id_pemesanan', getDetailPemesanan);
 
