@@ -426,6 +426,8 @@ export const updatePemesanan = async (req, res) => {
   const { id_pemesanan } = req.params;
   const { status_pemesanan, status_pembayaran } = req.body;
 
+  const id_admin = req.user?.id_admin; // dari login admin
+
   try {
     const existing = await getPemesananById(id_pemesanan);
     if (!existing) {
@@ -435,27 +437,44 @@ export const updatePemesanan = async (req, res) => {
     // Update status pemesanan
     await updateStatusPemesanan(id_pemesanan, status_pemesanan);
 
-    // Update status pembayaran jika ada
-    if (status_pembayaran) {
-      await updateStatusPembayaranAdmin(id_pemesanan, status_pembayaran);
+    // 🔎 Ambil metode pembayaran
+    const pembayaran = await getPembayaranWithMetode(id_pemesanan);
+
+    // 🔐 LOGIKA UTAMA
+    if (
+      status_pembayaran === 'sudah_bayar' &&
+      pembayaran?.nama_metode === 'Tunai di Kasir' &&
+      id_admin
+    ) {
+      await updateStatusPembayaranAdmin(
+        id_pemesanan,
+        status_pembayaran,
+        id_admin
+      );
+    } 
+    // 🔥 selain tunai → TIDAK simpan id_admin
+    else if (status_pembayaran) {
+      await updateStatusPembayaranAdmin(
+        id_pemesanan,
+        status_pembayaran,
+        null
+      );
     }
+
+    // Update status meja
     if (status_pemesanan === 'dikonfirmasi') {
-      await Meja.update(existing.no_meja, { status_meja: 'terisi' });
+      await updateStatusMeja(existing.no_meja, 'terisi');
+    } else if (
+      status_pemesanan === 'selesai' ||
+      status_pemesanan === 'dibatalkan'
+    ) {
+      await updateStatusMeja(existing.no_meja, 'tersedia');
     }
 
-    else if (status_pemesanan === 'selesai') {
-      await Meja.update(existing.no_meja, { status_meja: 'tersedia' });
-    }
-
-    else if (status_pemesanan === 'dibatalkan') {
-      await Meja.update(existing.no_meja, { status_meja: 'tersedia' });
-    }
-
-    res.status(200).json({
-      message: 'Pemesanan berhasil diperbarui',
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: 'Gagal update pemesanan', error });
+    res.json({ message: 'Pemesanan berhasil diperbarui' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Gagal update pemesanan' });
   }
 };
+
