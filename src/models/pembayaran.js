@@ -85,6 +85,8 @@ export const updateStatusPembayaranAdmin = (
   id_admin = null
 ) => {
   return new Promise((resolve, reject) => {
+    console.log(`🔄 [MODEL] Updating pembayaran: pemesanan=${id_pemesanan}, status=${status_pembayaran}, admin=${id_admin}`);
+    
     const sql = `
       UPDATE pembayaran
       SET 
@@ -93,11 +95,21 @@ export const updateStatusPembayaranAdmin = (
         waktu_bayar = IF(? = 'sudah_bayar', NOW(), waktu_bayar)
       WHERE id_pemesanan = ?
     `;
+    
     db.query(
       sql,
       [status_pembayaran, id_admin, status_pembayaran, id_pemesanan],
       (err, result) => {
-        if (err) return reject(err);
+        if (err) {
+          console.error(`❌ [MODEL] Error update pembayaran:`, err);
+          return reject(err);
+        }
+        
+        console.log(`✅ [MODEL] Pembayaran updated. Rows affected: ${result.affectedRows}`);
+        console.log(`   - id_pemesanan: ${id_pemesanan}`);
+        console.log(`   - status: ${status_pembayaran}`);
+        console.log(`   - id_admin: ${id_admin}`);
+        
         resolve(result);
       }
     );
