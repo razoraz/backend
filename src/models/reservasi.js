@@ -5,6 +5,17 @@ import db from '../config/db.js';
  * LIST RESERVASI (UNTUK TABEL)
  * =========================
  */
+// models/reservasi.js - tambahkan ini
+export const getReservasiById = (id_reservasi) => {
+  return new Promise((resolve, reject) => {
+    const sql = `SELECT * FROM reservasi WHERE id_reservasi = ?`;
+
+    db.query(sql, [id_reservasi], (err, results) => {
+      if (err) reject(err);
+      else resolve(results[0]);
+    });
+  });
+};
 export const getAllReservasiWithPayment = () => {
   return new Promise((resolve, reject) => {
     const sql = `
@@ -84,25 +95,15 @@ export const getDetailReservasi = (id_reservasi) => {
 
 export const updateReservasiModel = (id_reservasi, data) => {
   return new Promise((resolve, reject) => {
+    // JANGAN update pemesanan di sini, hanya update reservasi
     const sql = `
-      UPDATE reservasi r
-      LEFT JOIN pemesanan p 
-        ON r.id_reservasi = p.id_reservasi
-      SET
-        r.tanggal_reservasi = ?,
-        r.jam_reservasi = ?,
-        r.status_reservasi = ?,
-        p.status_pemesanan = ?
-      WHERE r.id_reservasi = ?
-    `;
+      UPDATE reservasi 
+      SET tanggal_reservasi = ?, 
+          jam_reservasi = ?, 
+          status_reservasi = ?
+      WHERE id_reservasi = ?`;
 
-    const values = [
-      data.tanggal_reservasi,
-      data.jam_reservasi,
-      data.status_reservasi,
-      data.status_pemesanan, // sinkron status
-      id_reservasi,
-    ];
+    const values = [data.tanggal_reservasi, data.jam_reservasi, data.status_reservasi, id_reservasi];
 
     db.query(sql, values, (err, result) => {
       if (err) reject(err);
@@ -114,28 +115,18 @@ export const updateReservasiModel = (id_reservasi, data) => {
 export const updateStatusReservasi = (id_reservasi, data) => {
   return new Promise((resolve, reject) => {
     const sql = `
-      UPDATE reservasi r
-      LEFT JOIN pemesanan p 
-        ON r.id_reservasi = p.id_reservasi
-      SET
-        r.status_reservasi = ?,
-        p.status_pemesanan = ?
-      WHERE r.id_reservasi = ?
+      UPDATE reservasi
+      SET status_reservasi = ?
+      WHERE id_reservasi = ?
     `;
 
-    const values = [
-      data.status_reservasi,
-      data.status_pemesanan, // sinkron status
-      id_reservasi,
-    ];
-
+    const values = [data.status_reservasi, id_reservasi];
     db.query(sql, values, (err, result) => {
       if (err) reject(err);
       else resolve(result);
     });
   });
 };
-
 
 /**
  * =========================
