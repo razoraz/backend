@@ -112,7 +112,7 @@ export const updateReservasiModel = (id_reservasi, data) => {
   });
 };
 
-export const updateStatusReservasi = (id_reservasi, data) => {
+export const updateStatusReservasi = (id_reservasi, status_reservasi) => {
   return new Promise((resolve, reject) => {
     const sql = `
       UPDATE reservasi
@@ -120,13 +120,14 @@ export const updateStatusReservasi = (id_reservasi, data) => {
       WHERE id_reservasi = ?
     `;
 
-    const values = [data.status_reservasi, id_reservasi];
+    const values = [status_reservasi, id_reservasi]; // langsung pakai string
     db.query(sql, values, (err, result) => {
       if (err) reject(err);
       else resolve(result);
     });
   });
 };
+
 
 /**
  * =========================
