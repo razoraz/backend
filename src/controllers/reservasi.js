@@ -137,15 +137,19 @@ export const getDetailByReservasi = async (req, res) => {
 };
 
 export const updateReservasi = async (req, res) => {
+  const { id_reservasi } = req.params;
+  const {
+    tanggal_reservasi,
+    jam_reservasi,
+    status_reservasi,
+    status_pembayaran,
+    id_admin, // ⭐ id_admin dari frontend
+  } = req.body;
+
+  console.log('📥 Request body updateReservasi:', req.body);
+  console.log('👤 id_admin dari request:', id_admin);
+
   try {
-    const { id_reservasi } = req.params;
-    const { 
-      tanggal_reservasi, 
-      jam_reservasi, 
-      status_reservasi,  // status reservasi (5 pilihan)
-      status_pembayaran
-    } = req.body;
-    
     if (!tanggal_reservasi || !jam_reservasi) {
       return res.status(400).json({
         message: 'Tanggal dan jam reservasi wajib diisi',
@@ -169,32 +173,44 @@ export const updateReservasi = async (req, res) => {
       status_reservasi,
     });
 
-    // 3️⃣ Update status pembayaran jika ada
+    // 3️⃣ LOGIKA UNTUK id_admin HANYA JIKA:
+    // - Ada status_pembayaran = 'sudah_bayar'
+    // - Metode pembayaran = 'Tunai di Kasir'
+    // - Ada id_admin dari request
+    let adminIdUntukPembayaran = null;
+
     if (status_pembayaran && id_pemesanan) {
-      await updateStatusPembayaranAdmin(id_pemesanan, status_pembayaran);
+      // 🔎 Ambil metode pembayaran (sama seperti di updatePemesanan)
+      // Asumsi: Anda punya fungsi getPembayaranWithMetode untuk reservasi juga
+      const pembayaran = await getPembayaranWithMetode(id_pemesanan);
+      console.log('💰 Metode pembayaran reservasi:', pembayaran?.nama_metode);
+
+      // ⭐ LOGIKA: Hanya simpan id_admin jika tunai & sudah_bayar
+      if (status_pembayaran === 'sudah_bayar' && pembayaran?.nama_metode === 'Tunai di Kasir' && id_admin) {
+        adminIdUntukPembayaran = id_admin;
+        console.log(`✅ Akan menyimpan id_admin: ${id_admin} untuk pembayaran tunai (reservasi)`);
+      }
+
+      // Update status pembayaran DENGAN id_admin
+      await updateStatusPembayaranAdmin(
+        id_pemesanan,
+        status_pembayaran,
+        adminIdUntukPembayaran // ⭐ null untuk QRIS, id_admin untuk tunai
+      );
     }
 
     // 4️⃣ LOGIKA UPDATE STATUS MEJA:
     if (no_meja) {
-      const today = new Date().toISOString().split('T')[0];
-      const isToday = tanggal_reservasi === today;
-      
       if (status_reservasi === 'menunggu_konfirmasi') {
-        // Reservasi dibuat, menunggu admin konfirmasi
         await updateStatusMeja(no_meja, 'dipesan');
         console.log(`✅ Meja ${no_meja} -> dipesan`);
-      }
-      else if (status_reservasi === 'menunggu_pembayaran') {
-        // Sudah dikonfirmasi, tunggu pembayaran (deposit)
+      } else if (status_reservasi === 'menunggu_pembayaran') {
         await updateStatusMeja(no_meja, 'tersedia');
         console.log(`✅ Meja ${no_meja} -> tersedia`);
-      }
-      else if (status_reservasi === 'dikonfirmasi') {
+      } else if (status_reservasi === 'dikonfirmasi') {
         await updateStatusMeja(no_meja, 'terisi');
         console.log(`✅ Meja ${no_meja} -> terisi`);
-      }
-      else if (status_reservasi === 'selesai' || status_reservasi === 'dibatalkan') {
-        // Selesai atau batal -> meja tersedia lagi
+      } else if (status_reservasi === 'selesai' || status_reservasi === 'dibatalkan') {
         await updateStatusMeja(no_meja, 'tersedia');
         console.log(`✅ Meja ${no_meja} -> tersedia`);
       }
@@ -202,16 +218,14 @@ export const updateReservasi = async (req, res) => {
 
     // 5️⃣ Update pemesanan hanya jika status_reservasi adalah status yang ada di pemesanan
     if (id_pemesanan) {
-      // Mapping: hanya status yang ada di pemesanan (tanpa menunggu_konfirmasi)
       const statusMapping = {
-        'menunggu_pembayaran': 'menunggu_pembayaran',
-        'menunggu_konfirmasi': 'dikonfirmasi',
-        'dikonfirmasi': 'dikonfirmasi',
-        'selesai': 'selesai',
-        'dibatalkan': 'dibatalkan'
+        menunggu_pembayaran: 'menunggu_pembayaran',
+        menunggu_konfirmasi: 'dikonfirmasi',
+        dikonfirmasi: 'dikonfirmasi',
+        selesai: 'selesai',
+        dibatalkan: 'dibatalkan',
       };
-      
-      // Jika status_reservasi ada di mapping, update pemesanan
+
       if (statusMapping[status_reservasi]) {
         await updateStatusPemesanan(id_pemesanan, statusMapping[status_reservasi]);
       }
@@ -219,6 +233,7 @@ export const updateReservasi = async (req, res) => {
 
     res.json({
       message: 'Reservasi berhasil diperbarui',
+      id_admin_dicatat: adminIdUntukPembayaran, // ⭐ Info ke frontend
     });
   } catch (err) {
     console.error(err);
