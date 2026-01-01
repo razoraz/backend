@@ -37,6 +37,9 @@ export const login = async (req, res) => {
     res.json({
       message: 'Login berhasil',
       token,
+      id_admin: admin.id_admin,
+      email: admin.email, 
+      kode_admin: admin.kode_admin, 
     });
   } catch (err) {
     console.error('Login error:', err);
