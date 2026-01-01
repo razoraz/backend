@@ -2,7 +2,6 @@ import { getPembayaranByOrderId, updateStatusPembayaran } from '../models/pembay
 import { getPemesananById, updateStatusPemesanan, updateStatusMeja } from '../models/pemesanan.js';
 import { updateStatusReservasi } from '../models/reservasi.js';
 
-
 export const midtransWebhook = async (req, res) => {
   try {
     const payload = req.body;
@@ -38,17 +37,13 @@ export const midtransWebhook = async (req, res) => {
 
           if (pemesanan.no_meja) {
             await updateStatusMeja(pemesanan.no_meja, 'dipesan');
-            console.log(
-              `✅ Meja ${pemesanan.no_meja} -> dipesan`
-            );
+            console.log(`✅ Meja ${pemesanan.no_meja} -> dipesan`);
           }
         } else {
           // 🔴 TIDAK ADA RESERVASI (walk-in)
           if (pemesanan.no_meja) {
             await updateStatusMeja(pemesanan.no_meja, 'terisi');
-            console.log(
-              `✅ Meja ${pemesanan.no_meja} -> terisi`
-            );
+            console.log(`✅ Meja ${pemesanan.no_meja} -> terisi`);
           }
         }
         break;
@@ -70,9 +65,7 @@ export const midtransWebhook = async (req, res) => {
 
         if (pemesanan.no_meja) {
           await updateStatusMeja(pemesanan.no_meja, 'tersedia');
-          console.log(
-            `❌ Meja ${pemesanan.no_meja} -> tersedia`
-          );
+          console.log(`❌ Meja ${pemesanan.no_meja} -> tersedia`);
         }
         break;
     }
@@ -84,11 +77,8 @@ export const midtransWebhook = async (req, res) => {
     await updateStatusPemesanan(pemesanan.id_pemesanan, status_pemesanan);
 
     // 6️⃣ Update reservasi (HANYA JIKA ADA & TIDAK NULL)
-    if (pemesanan.id_reservasi && status_reservasi) {
-      await updateStatusReservasi(
-        pemesanan.id_reservasi,
-        status_reservasi
-      );
+    if (pemesanan.id_reservasi && status_reservasi !== null) {
+      await updateStatusReservasi(pemesanan.id_reservasi, status_reservasi);
     }
 
     return res.status(200).json({ success: true });
@@ -97,4 +87,3 @@ export const midtransWebhook = async (req, res) => {
     return res.status(200).json({ success: false });
   }
 };
-
