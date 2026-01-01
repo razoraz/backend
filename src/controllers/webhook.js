@@ -67,11 +67,7 @@ export const midtransWebhook = async (req, res) => {
 
     // 6️⃣ Update reservasi (kalau ada)
     if (pemesanan.id_reservasi) {
-      await updateReservasiModel(pemesanan.id_reservasi, {
-        tanggal_reservasi: pemesanan.tanggal_pemesanan,
-        jam_reservasi: null,
-        status_reservasi,
-      });
+      await updateReservasiModel(pemesanan.id_reservasi, status_reservasi);
     }
 
     return res.status(200).json({ success: true });
