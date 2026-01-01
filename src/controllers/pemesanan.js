@@ -6,9 +6,9 @@ import { getMejaById, addPemesanan, getPemesananById,  updateStatusPemesanan, ge
 import { getAllMetodePembayaran } from '../models/metode_pembayaran.js';
 
 import { addDetailPemesanan, getDetailItemPemesanan } from '../models/detail_pemesanan.js';
-import { addPembayaran, getPembayaranByPemesananId, updateStatusPembayaran, updateStatusPembayaranAdmin } from '../models/pembayaran.js';
+import { addPembayaran, getPembayaranByPemesananId, updateStatusPembayaran, updateStatusPembayaranAdmin, getPembayaranWithMetode } from '../models/pembayaran.js';
 import midtransClient from 'midtrans-client';
-import Meja from '../models/meja.js';
+
 
 // Setup Midtrans Snap
 const snap = new midtransClient.Snap({
