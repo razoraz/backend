@@ -1,7 +1,7 @@
 // =========================
 // 📦 IMPORT MODEL
 // =========================
-import { getMejaById, addPemesanan, getPemesananById,  updateStatusPemesanan, getAllPemesananWithPayment, deletePemesananById, getDetailFullPemesanan, getDetailStrukModel } from '../models/pemesanan.js';
+import { getMejaById, addPemesanan, getPemesananById,  updateStatusPemesanan, getAllPemesananWithPayment, deletePemesananById, getDetailFullPemesanan, getDetailStrukModel, updateStatusMeja } from '../models/pemesanan.js';
 
 import { getAllMetodePembayaran } from '../models/metode_pembayaran.js';
 
