@@ -186,8 +186,8 @@ export const updateReservasi = async (req, res) => {
       }
       else if (status_reservasi === 'menunggu_pembayaran') {
         // Sudah dikonfirmasi, tunggu pembayaran (deposit)
-        await updateStatusMeja(no_meja, 'dipesan');
-        console.log(`✅ Meja ${no_meja} -> dipesan`);
+        await updateStatusMeja(no_meja, 'tersedia');
+        console.log(`✅ Meja ${no_meja} -> tersedia`);
       }
       else if (status_reservasi === 'dikonfirmasi') {
         await updateStatusMeja(no_meja, 'terisi');
