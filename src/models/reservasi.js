@@ -100,7 +100,32 @@ export const updateReservasiModel = (id_reservasi, data) => {
       data.tanggal_reservasi,
       data.jam_reservasi,
       data.status_reservasi,
-      data.status_reservasi, // sinkron status
+      data.status_pemesanan, // sinkron status
+      id_reservasi,
+    ];
+
+    db.query(sql, values, (err, result) => {
+      if (err) reject(err);
+      else resolve(result);
+    });
+  });
+};
+
+export const updateStatusReservasi = (id_reservasi, data) => {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      UPDATE reservasi r
+      LEFT JOIN pemesanan p 
+        ON r.id_reservasi = p.id_reservasi
+      SET
+        r.status_reservasi = ?,
+        p.status_pemesanan = ?
+      WHERE r.id_reservasi = ?
+    `;
+
+    const values = [
+      data.status_reservasi,
+      data.status_pemesanan, // sinkron status
       id_reservasi,
     ];
 
