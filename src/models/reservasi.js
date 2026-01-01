@@ -95,7 +95,6 @@ export const getDetailReservasi = (id_reservasi) => {
 
 export const updateReservasiModel = (id_reservasi, data) => {
   return new Promise((resolve, reject) => {
-    // JANGAN update pemesanan di sini, hanya update reservasi
     const sql = `
       UPDATE reservasi 
       SET tanggal_reservasi = ?, 
