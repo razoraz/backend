@@ -193,8 +193,12 @@ export const getDetailStrukModel = (id_pemesanan) => {
         pm.redirect_url,
         pm.waktu_bayar,
         pm.id_metode,
+        pm.id_admin,  -- ⭐ TAMBAHKAN INI
 
         mp.nama_metode AS metode_pembayaran,
+
+        a.email AS email_admin,  -- ⭐ TAMBAHKAN INI
+        a.kode_admin,  -- ⭐ TAMBAHKAN INI
 
         d.id_detail,
         d.jumlah,
@@ -209,6 +213,8 @@ export const getDetailStrukModel = (id_pemesanan) => {
         ON p.id_pemesanan = pm.id_pemesanan
       LEFT JOIN metode_pembayaran mp 
         ON pm.id_metode = mp.id_metode
+      LEFT JOIN admin a  -- ⭐ TAMBAHKAN JOIN KE TABEL ADMIN
+        ON pm.id_admin = a.id_admin
       LEFT JOIN detail_pemesanan d 
         ON p.id_pemesanan = d.id_pemesanan
       LEFT JOIN menu m 
@@ -228,6 +234,8 @@ export const getDetailStrukModel = (id_pemesanan) => {
         total_harga: rows[0].total_harga,
         status_pembayaran: rows[0].status_pembayaran,
         metode_pembayaran: rows[0].metode_pembayaran,
+        email_admin: rows[0].email_admin, // ⭐ INI AKAN ADA JIKA id_admin TIDAK NULL
+        kode_admin: rows[0].kode_admin, // ⭐ INI AKAN ADA JIKA id_admin TIDAK NULL
         reservasi: rows[0].id_reservasi
           ? {
               id_reservasi: rows[0].id_reservasi,
