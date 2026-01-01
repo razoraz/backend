@@ -1,7 +1,7 @@
 import { getPembayaranByOrderId, updateStatusPembayaran } from '../models/pembayaran.js';
-import { getPemesananById, updateStatusPemesanan } from '../models/pemesanan.js';
+import { getPemesananById, updateStatusPemesanan, updateStatusMeja } from '../models/pemesanan.js';
 import { updateStatusReservasi } from '../models/reservasi.js';
-import Meja from '../models/meja.js';
+
 
 export const midtransWebhook = async (req, res) => {
   try {
@@ -37,16 +37,18 @@ export const midtransWebhook = async (req, res) => {
           status_reservasi = 'menunggu_konfirmasi';
 
           if (pemesanan.no_meja) {
-            await Meja.update(pemesanan.no_meja, {
-              status_meja: 'dipesan',
-            });
+            await updateStatusMeja(pemesanan.no_meja, 'dipesan');
+            console.log(
+              `✅ Meja ${pemesanan.no_meja} -> dipesan`
+            );
           }
         } else {
           // 🔴 TIDAK ADA RESERVASI (walk-in)
           if (pemesanan.no_meja) {
-            await Meja.update(pemesanan.no_meja, {
-              status_meja: 'terisi',
-            });
+            await updateStatusMeja(pemesanan.no_meja, 'terisi');
+            console.log(
+              `✅ Meja ${pemesanan.no_meja} -> terisi`
+            );
           }
         }
         break;
@@ -67,9 +69,10 @@ export const midtransWebhook = async (req, res) => {
         }
 
         if (pemesanan.no_meja) {
-          await Meja.update(pemesanan.no_meja, {
-            status_meja: 'tersedia',
-          });
+          await updateStatusMeja(pemesanan.no_meja, 'tersedia');
+          console.log(
+            `❌ Meja ${pemesanan.no_meja} -> tersedia`
+          );
         }
         break;
     }
