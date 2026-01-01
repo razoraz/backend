@@ -190,10 +190,8 @@ export const updateReservasi = async (req, res) => {
         console.log(`✅ Meja ${no_meja} -> dipesan`);
       }
       else if (status_reservasi === 'dikonfirmasi') {
-        // Pembayaran lunas/konfirmasi final
-        const mejaStatus = isToday ? 'terisi' : 'dipesan';
-        await updateStatusMeja(no_meja, mejaStatus);
-        console.log(`✅ Meja ${no_meja} -> ${mejaStatus}`);
+        await updateStatusMeja(no_meja, 'terisi');
+        console.log(`✅ Meja ${no_meja} -> terisi`);
       }
       else if (status_reservasi === 'selesai' || status_reservasi === 'dibatalkan') {
         // Selesai atau batal -> meja tersedia lagi
