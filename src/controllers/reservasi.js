@@ -1,5 +1,5 @@
 import { addReservasi, getAllReservasiWithPayment, deleteReservasiById, getDetailReservasi, getDetailItemReservasi, updateReservasiModel } from '../models/reservasi.js';
-import { addPemesanan } from '../models/pemesanan.js';
+import { addPemesanan, updateStatusPemesanan } from '../models/pemesanan.js';
 import { addDetailPemesanan } from '../models/detail_pemesanan.js';
 import { addPembayaran, updateStatusPembayaranAdmin } from '../models/pembayaran.js';
 import midtransClient from 'midtrans-client';
@@ -139,13 +139,13 @@ export const getDetailByReservasi = async (req, res) => {
 export const updateReservasi = async (req, res) => {
   try {
     const { id_reservasi } = req.params;
-    const {
-      tanggal_reservasi,
-      jam_reservasi,
-      status_reservasi,
-      status_pembayaran,
+    const { 
+      tanggal_reservasi, 
+      jam_reservasi, 
+      status_reservasi,  // status reservasi (5 pilihan)
+      status_pembayaran
     } = req.body;
-
+    
     if (!tanggal_reservasi || !jam_reservasi) {
       return res.status(400).json({
         message: 'Tanggal dan jam reservasi wajib diisi',
@@ -169,31 +169,50 @@ export const updateReservasi = async (req, res) => {
       status_reservasi,
     });
 
-    // 3️⃣ Update status pembayaran (jika ada pemesanan)
+    // 3️⃣ Update status pembayaran jika ada
     if (status_pembayaran && id_pemesanan) {
-      await updateStatusPembayaranAdmin(
-        id_pemesanan,
-        status_pembayaran
-      );
+      await updateStatusPembayaranAdmin(id_pemesanan, status_pembayaran);
     }
 
-    // 4️⃣ Update status meja (AMAN)
-    if (status_reservasi === 'selesai' && no_meja) {
-      await Meja.update(no_meja, {
-        status_meja: 'tersedia',
-      });
+    // 4️⃣ LOGIKA UPDATE STATUS MEJA:
+    if (no_meja) {
+      const today = new Date().toISOString().split('T')[0];
+      const isToday = tanggal_reservasi === today;
+      
+      if (status_reservasi === 'menunggu_konfirmasi') {
+        // Reservasi dibuat, menunggu admin konfirmasi
+        await Meja.update(no_meja, { status_meja: 'dipesan' });
+      }
+      else if (status_reservasi === 'menunggu_pembayaran') {
+        // Sudah dikonfirmasi, tunggu pembayaran (deposit)
+        await Meja.update(no_meja, { status_meja: 'dipesan' });
+      }
+      else if (status_reservasi === 'dikonfirmasi') {
+        // Pembayaran lunas/konfirmasi final
+        const mejaStatus = isToday ? 'terisi' : 'dipesan';
+        await Meja.update(no_meja, { status_meja: mejaStatus });
+      }
+      else if (status_reservasi === 'selesai' || status_reservasi === 'dibatalkan') {
+        // Selesai atau batal -> meja tersedia lagi
+        await Meja.update(no_meja, { status_meja: 'tersedia' });
+      }
     }
 
-    if (status_reservasi === 'dibatalkan' && no_meja) {
-      await Meja.update(no_meja, {
-        status_meja: 'tersedia',
-      });
-    }
-
-    if (status_reservasi === 'dikonfirmasi' && no_meja) {
-      await Meja.update(no_meja, {
-        status_meja: 'terisi',
-      });
+    // 5️⃣ Update pemesanan hanya jika status_reservasi adalah status yang ada di pemesanan
+    if (id_pemesanan) {
+      // Mapping: hanya status yang ada di pemesanan (tanpa menunggu_konfirmasi)
+      const statusMapping = {
+        'menunggu_pembayaran': 'menunggu_pembayaran',
+        'menunggu_konfirmasi': 'dikonfirmasi',
+        'dikonfirmasi': 'dikonfirmasi',
+        'selesai': 'selesai',
+        'dibatalkan': 'dibatalkan'
+      };
+      
+      // Jika status_reservasi ada di mapping, update pemesanan
+      if (statusMapping[status_reservasi]) {
+        await updateStatusPemesanan(id_pemesanan, statusMapping[status_reservasi]);
+      }
     }
 
     res.json({
@@ -207,4 +226,3 @@ export const updateReservasi = async (req, res) => {
     });
   }
 };
-
