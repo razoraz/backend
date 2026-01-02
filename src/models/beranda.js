@@ -126,7 +126,7 @@ export const getNotifikasiBerandaModel = (callback) => {
   SELECT 'menu' AS tipe,
          CONCAT('Menu ', nama_menu, ' habis') AS pesan
   FROM menu
-  WHERE status = 'habis'
+  WHERE status_tersedia = 'habis'
 
   UNION ALL
 
