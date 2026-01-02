@@ -105,8 +105,7 @@ export const getNotifikasiBerandaModel = (callback) => {
            ' menit lalu'
          ) AS pesan
   FROM pemesanan
-  WHERE status_pemesanan = 'menunggu_pembayaran'
-    AND created_at >= NOW() - INTERVAL 5 MINUTE
+  WHERE created_at >= NOW() - INTERVAL 5 MINUTE
 
   UNION ALL
 
@@ -118,8 +117,7 @@ export const getNotifikasiBerandaModel = (callback) => {
            ' menit lalu'
          ) AS pesan
   FROM reservasi
-  WHERE status_reservasi = 'menunggu_pembayaran'
-    AND created_at >= NOW() - INTERVAL 1 DAY
+  WHERE created_at >= NOW() - INTERVAL 1 DAY
 
   UNION ALL
 
