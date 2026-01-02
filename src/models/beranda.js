@@ -71,20 +71,20 @@ export const getBerandaSummaryModel = (tanggal, kemarin, callback) => {
                 callback(null, {
                   pemesanan: {
                     hari_ini: p[0].hari_ini || 0,
-                    selisih: (p[0].hari_ini || 0) - (p[0].kemarin || 0)
+                    selisih: (p[0].hari_ini || 0) - (p[0].kemarin || 0),
                   },
                   reservasi: {
                     hari_ini: r[0].hari_ini || 0,
-                    selisih: (r[0].hari_ini || 0) - (r[0].kemarin || 0)
+                    selisih: (r[0].hari_ini || 0) - (r[0].kemarin || 0),
                   },
                   pendapatan: {
                     hari_ini: d[0].hari_ini || 0,
-                    selisih: (d[0].hari_ini || 0) - (d[0].kemarin || 0)
+                    selisih: (d[0].hari_ini || 0) - (d[0].kemarin || 0),
                   },
                   menuTerlaris: m,
                   mejaTersedia: meja[0].total,
                   menuHabis: menuHabis[0].total,
-                  menungguPembayaran: menunggu[0].total
+                  menungguPembayaran: menunggu[0].total,
                 });
               });
             });
@@ -97,28 +97,52 @@ export const getBerandaSummaryModel = (tanggal, kemarin, callback) => {
 
 export const getNotifikasiBerandaModel = (callback) => {
   const sql = `
-    SELECT 'pemesanan' AS tipe,
-           CONCAT('Pemesanan ', id_pemesanan, ' menunggu pembayaran') AS pesan
-    FROM pemesanan
-    WHERE status_pemesanan = 'menunggu_pembayaran'
+  SELECT 'pemesanan' AS tipe,
+         CONCAT(
+           'Pemesanan #', id_pemesanan,
+           ' masuk ',
+           TIMESTAMPDIFF(MINUTE, created_at, NOW()),
+           ' menit lalu'
+         ) AS pesan
+  FROM pemesanan
+  WHERE status_pemesanan = 'menunggu_pembayaran'
+    AND created_at >= NOW() - INTERVAL 5 MINUTE
 
-    UNION ALL
+  UNION ALL
 
-    SELECT 'reservasi' AS tipe,
-           CONCAT('Reservasi ', nama_pelanggan, ' menunggu pembayaran') AS pesan
-    FROM reservasi
-    WHERE status_reservasi = 'menunggu_pembayaran'
+  SELECT 'reservasi' AS tipe,
+         CONCAT(
+           'Reservasi #', id_reservasi,
+           ' masuk ',
+           TIMESTAMPDIFF(MINUTE, created_at, NOW()),
+           ' menit lalu'
+         ) AS pesan
+  FROM reservasi
+  WHERE status_reservasi = 'menunggu_pembayaran'
+    AND created_at >= NOW() - INTERVAL 1 DAY
 
-    UNION ALL
+  UNION ALL
 
-    SELECT 'menu' AS tipe,
-           CONCAT('Menu ', nama_menu, ' habis') AS pesan
-    FROM menu
-    WHERE status_tersedia = 'habis'
+  SELECT 'menu' AS tipe,
+         CONCAT('Menu ', nama_menu, ' habis') AS pesan
+  FROM menu
+  WHERE status = 'habis'
 
-    ORDER BY tipe
-    LIMIT 5
-  `;
+  UNION ALL
+
+  SELECT 'feedback' AS tipe,
+       CONCAT(
+         'Feedback dari pemesanan #', f.id_pemesanan,
+         ' (rating ', f.rating, ') ',
+         TIMESTAMPDIFF(MINUTE, f.tanggal_feedback, NOW()),
+         ' menit lalu'
+       ) AS pesan
+  FROM feedback f
+  WHERE f.tanggal_feedback >= NOW() - INTERVAL 2 MINUTE
+  
+  ORDER BY tipe
+  LIMIT 7
+`;
 
   db.query(sql, (err, rows) => {
     if (err) return callback(err);
