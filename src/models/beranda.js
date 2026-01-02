@@ -132,14 +132,14 @@ export const getNotifikasiBerandaModel = (callback) => {
 
   SELECT 'feedback' AS tipe,
        CONCAT(
-         'Feedback dari pemesanan #', f.id_pemesanan,
-         ' (rating ', f.rating, ') ',
-         TIMESTAMPDIFF(MINUTE, f.tanggal_feedback, NOW()),
+         'Feedback dari pemesanan #', id_pemesanan,
+         ' (rating ', rating, ') ',
+         TIMESTAMPDIFF(MINUTE, tanggal_feedback, NOW()),
          ' menit lalu'
        ) AS pesan
-  FROM feedback f
-  WHERE f.tanggal_feedback >= NOW() - INTERVAL 2 MINUTE
-  
+  FROM feedback 
+  WHERE tanggal_feedback >= NOW() - INTERVAL 2 MINUTE
+
   ORDER BY tipe
   LIMIT 7
 `;
