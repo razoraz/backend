@@ -32,16 +32,12 @@ export const addEvent = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: "Gambar wajib diupload" });
 
-    // Upload ke Cloudinary
-    const upload = await cloudinary.uploader.upload(req.file.path, {
-      folder: 'event',
-    });
 
     const data = {
       judul: req.body.judul,
       deskripsi: req.body.deskripsi,
-      gambar_url: upload.secure_url,
-      public_id: upload.public_id,
+      gambar_url: req.file.path,
+      public_id: req.file.filename,
     };
 
     await addEventModel(data);
@@ -64,12 +60,9 @@ export const updateEvent = async (req, res) => {
       // Hapus gambar lama di Cloudinary
       if (public_id) await cloudinary.uploader.destroy(public_id);
 
-      // Upload gambar baru
-      const upload = await cloudinary.uploader.upload(req.file.path, {
-        folder: 'event',
-      });
-      gambar_url = upload.secure_url;
-      public_id = upload.public_id;
+    
+      gambar_url = req.file.path;
+      public_id = req.file.filename;
     }
 
     const data = {
