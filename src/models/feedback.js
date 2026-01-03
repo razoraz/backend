@@ -64,3 +64,16 @@ export const deleteFeedback = (id_feedback, callback) => {
   );
 };
 
+export const getFeedbackById = (id_feedback) => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      "SELECT * FROM feedback WHERE id_feedback = ?",
+      [id_feedback],
+      (err, result) => {
+        if (err) reject(err);
+        resolve(result[0]);
+      }
+    );
+  });
+};
+
