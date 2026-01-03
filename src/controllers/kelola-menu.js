@@ -33,7 +33,6 @@ export const addMenu = async (req, res) => {
     const data = {
       ...req.body,
       gambar_menu: req.file.path,
-      public_id: req.file.filename,
     };
 
     tambahMenu(data, (err) => {
