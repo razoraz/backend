@@ -203,6 +203,7 @@ export const getDetailStrukModel = (id_pemesanan) => {
         d.id_detail,
         d.jumlah,
         d.subtotal,
+        d.catatan
 
         m.nama_menu
 
@@ -252,6 +253,7 @@ export const getDetailStrukModel = (id_pemesanan) => {
             nama_menu: r.nama_menu,
             jumlah: r.jumlah,
             subtotal: r.subtotal,
+            catatan: r.catatan,
           });
         }
       });
