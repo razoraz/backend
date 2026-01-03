@@ -56,12 +56,17 @@ export const addFeedback = (data) => {
 // =======================
 // DELETE feedback by ID + Cloudinary
 // =======================
-export const deleteFeedback = (id_feedback, callback) => {
-  db.query(
-    "DELETE FROM feedback WHERE id_feedback = ?",
-    [id_feedback],
-    callback
-  );
+export const deleteFeedbackById = (id_feedback) => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      "DELETE FROM feedback WHERE id_feedback = ?",
+      [id_feedback],
+      (err, result) => {
+        if (err) reject(err);
+        resolve(result);
+      }
+    );
+  });
 };
 
 export const getFeedbackById = (id_feedback) => {
