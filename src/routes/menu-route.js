@@ -1,7 +1,5 @@
 import express from "express";
-import multer from "multer";
-import path from "path";
-import { fileURLToPath } from "url";
+import upload from "../middlewares/uploadCloudinary.js";
 import {
   tambahKategori,
   hapusKategori,
@@ -19,25 +17,6 @@ import {
 } from "../controllers/kelola-menu.js";
 
 const router = express.Router();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// ========================
-// 📁 Konfigurasi Upload
-// ========================
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(process.cwd(), "uploads"));
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname); 
-    const name = path.basename(file.originalname, ext); 
-    cb(null, `${name}-${Date.now()}${ext}`);
-  },
-});
-
-
-const upload = multer({ storage });
 
 // ========================
 // 🛣️ ROUTES
