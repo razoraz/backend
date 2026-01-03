@@ -1,4 +1,5 @@
 import db from "../config/db.js";
+import cloudinary from "../config/cloudinary.js";
 
 // =======================
 // GET semua feedback
@@ -51,14 +52,40 @@ export const addFeedback = (data) => {
 };
 
 // =======================
-// DELETE feedback by ID
+// DELETE feedback by ID + Cloudinary
 // =======================
 export const deleteFeedback = (id_feedback) => {
   return new Promise((resolve, reject) => {
-    const sql = "DELETE FROM feedback WHERE id_feedback = ?";
-    db.query(sql, [id_feedback], (err, result) => {
-      if (err) reject(err);
-      resolve(result);
+    // 1️⃣ Ambil URL gambar dari DB
+    const getSql = "SELECT gambar_feedback FROM feedback WHERE id_feedback = ?";
+    db.query(getSql, [id_feedback], async (err, results) => {
+      if (err) return reject(err);
+      if (results.length === 0)
+        return reject(new Error("Feedback tidak ditemukan"));
+
+      const gambarUrl = results[0].gambar_feedback;
+
+      try {
+        // 2️⃣ Hapus gambar Cloudinary (jika ada)
+        if (gambarUrl) {
+          const publicId = gambarUrl
+            .split("/")
+            .slice(-2)
+            .join("/")
+            .split(".")[0]; // feedback/abc123
+
+          await cloudinary.uploader.destroy(publicId);
+        }
+
+        // 3️⃣ Hapus data feedback di DB
+        const deleteSql = "DELETE FROM feedback WHERE id_feedback = ?";
+        db.query(deleteSql, [id_feedback], (deleteErr, deleteResult) => {
+          if (deleteErr) return reject(deleteErr);
+          resolve(deleteResult);
+        });
+      } catch (cloudErr) {
+        reject(cloudErr);
+      }
     });
   });
 };
