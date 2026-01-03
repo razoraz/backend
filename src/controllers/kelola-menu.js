@@ -1,5 +1,5 @@
 import cloudinary from "../config/cloudinary.js";
-import { getAllKategori } from "../models/kategori-menu.js";
+import { getAllKategori } from "../models/kategori_menu.js";
 import {
   tambahMenu,
   getAllMenu,
