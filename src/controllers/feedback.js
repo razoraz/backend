@@ -32,7 +32,7 @@ export const createFeedback = async (req, res) => {
 
     let gambar_feedback = null;
     if (req.file) {
-      gambar_feedback = req.file.filename; // nama file dari multer
+      gambar_feedback = req.file.path; // URL Cloudinary
     }
 
     await addFeedback({
@@ -46,12 +46,12 @@ export const createFeedback = async (req, res) => {
     res.status(201).json({
       message: "Feedback berhasil ditambahkan",
     });
-
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Terjadi kesalahan server" });
   }
 };
+
 
 // DELETE feedback by ID
 export const deleteFeedbackById = async (req, res) => {
