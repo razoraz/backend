@@ -66,13 +66,12 @@ export const deleteFeedback = (id_feedback) => {
       const gambarUrl = results[0].gambar_feedback;
 
       try {
-        // 2️⃣ Hapus gambar Cloudinary (jika ada)
         if (gambarUrl) {
           const publicId = gambarUrl
             .split("/")
             .slice(-2)
             .join("/")
-            .split(".")[0]; // feedback/abc123
+            .split(".")[0]; 
 
           await cloudinary.uploader.destroy(publicId);
         }
