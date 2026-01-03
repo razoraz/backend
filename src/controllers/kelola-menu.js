@@ -32,8 +32,8 @@ export const addMenu = async (req, res) => {
     
     const data = {
       ...req.body,
-      gambar_menu: upload.secure_url,
-      public_id: upload.public_id,
+      gambar_menu: req.file.path,
+      public_id: req.file.filename,
     };
 
     tambahMenu(data, (err) => {
@@ -85,7 +85,8 @@ export const updateMenu = async (req, res) => {
 
     if (req.file) {
       // Hapus gambar lama pakai public_id dari DB
-      if (result[0].public_id) {
+      const { public_id } = result[0];
+      if (result.public_id) {
         await cloudinary.uploader.destroy(result[0].public_id);
       }
 
