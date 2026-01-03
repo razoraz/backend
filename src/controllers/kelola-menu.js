@@ -29,11 +29,7 @@ export const addMenu = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ message: 'Gambar wajib diupload' });
     }
-
-    const upload = await cloudinary.uploader.upload(req.file.path, {
-      folder: 'menu',
-    });
-
+    
     const data = {
       ...req.body,
       gambar_menu: upload.secure_url,
@@ -88,20 +84,14 @@ export const updateMenu = async (req, res) => {
     let public_id = null;
 
     if (req.file) {
-      // Hapus gambar lama
+      // Hapus gambar lama pakai public_id dari DB
       if (result[0].public_id) {
         await cloudinary.uploader.destroy(result[0].public_id);
       }
 
-      // Upload baru
-      const upload = await cloudinary.uploader.upload(req.file.path, {
-        folder: 'menu',
-        public_id: result[0].public_id, // overwrite
-        overwrite: true,
-      });
-
-      gambar_menu = upload.secure_url;
-      public_id = upload.public_id;
+      // Ambil hasil upload dari middleware (JANGAN upload lagi)
+      gambar_menu = req.secure_url;
+      public_id = req.file.public_id;
     }
 
     updateMenuById(
@@ -118,6 +108,7 @@ export const updateMenu = async (req, res) => {
     );
   });
 };
+
 
 // =======================
 // 🔎 Menu by ID
