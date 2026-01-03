@@ -90,8 +90,8 @@ export const updateMenu = async (req, res) => {
       }
 
       // Ambil hasil upload dari middleware (JANGAN upload lagi)
-      gambar_menu = req.secure_url;
-      public_id = req.file.public_id;
+      gambar_menu = req.file.path;     // secure_url
+      public_id = req.file.filename;   // public_id
     }
 
     updateMenuById(
