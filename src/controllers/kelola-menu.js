@@ -32,8 +32,6 @@ export const addMenu = async (req, res) => {
 
     const upload = await cloudinary.uploader.upload(req.file.path, {
       folder: 'menu',
-      public_id: result[0].public_id, // overwrite
-      overwrite: true,
     });
 
     const data = {
@@ -98,6 +96,8 @@ export const updateMenu = async (req, res) => {
       // Upload baru
       const upload = await cloudinary.uploader.upload(req.file.path, {
         folder: 'menu',
+        public_id: result[0].public_id, // overwrite
+        overwrite: true,
       });
 
       gambar_menu = upload.secure_url;
