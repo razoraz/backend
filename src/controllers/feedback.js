@@ -1,4 +1,4 @@
-import { addFeedback, getAllFeedback, deleteFeedback, getFeedbackById } from '../models/feedback.js';
+import { addFeedback, getAllFeedback, deleteFeedbackById, getFeedbackById } from '../models/feedback.js';
 import cloudinary from '../config/cloudinary.js';
 
 // Tambah feedback
@@ -53,24 +53,32 @@ export const createFeedback = async (req, res) => {
 };
 
 // DELETE feedback by ID
-export const deleteFeedbackById = async (req, res) => {
-  const { id_feedback } = req.params;
+export const deleteFeedbackByIdController = async (req, res) => {
+  try {
+    const { id_feedback } = req.params;
 
-  getFeedbackById(id_feedback, async (err, result) => {
-    if (err || !result.length) {
-      return res.status(404).json({ message: 'Menu tidak ditemukan' });
-    }
-    const { public_id } = result[0];
-
-    // 2️⃣ hapus gambar cloudinary (jika ada)
-    if (public_id) {
-      await cloudinary.uploader.destroy(public_id);
+    if (!id_feedback) {
+      return res.status(400).json({ message: 'ID feedback tidak ditemukan' });
     }
 
-    // 3️⃣ hapus data feedback
-    deleteFeedback(id_feedback, (err2) => {
-      if (err2) return res.status(500).json(err2);
-      res.json({ message: 'Feedback berhasil dihapus' });
-    });
-  });
+    // Ambil data feedback dulu
+    const feedback = await getFeedbackById(id_feedback);
+
+    if (!feedback) {
+      return res.status(404).json({ message: 'Feedback tidak ditemukan' });
+    }
+
+    // Hapus gambar di Cloudinary kalau ada
+    if (feedback.public_id) {
+      await cloudinary.uploader.destroy(feedback.public_id);
+    }
+
+    // Hapus feedback dari DB
+    await deleteFeedbackById(id_feedback);
+
+    res.status(200).json({ message: 'Feedback berhasil dihapus' });
+  } catch (error) {
+    console.error('Error delete feedback:', error);
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
+  }
 };
