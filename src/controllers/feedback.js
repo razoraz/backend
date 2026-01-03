@@ -1,23 +1,21 @@
-import { addFeedback, getAllFeedback, deleteFeedback } from "../models/feedback.js";
-
-
+import { addFeedback, getAllFeedback, deleteFeedback } from '../models/feedback.js';
 
 // Tambah feedback
 
 export const getFeedbacks = async (req, res) => {
-   try {
+  try {
     const data = await getAllFeedback();
 
     res.status(200).json({
-      status: "success",
-      message: "Data feedback berhasil diambil",
-      data: data
+      status: 'success',
+      message: 'Data feedback berhasil diambil',
+      data: data,
     });
   } catch (error) {
-    console.error("Error get feedback:", error);
+    console.error('Error get feedback:', error);
     res.status(500).json({
-      status: "error",
-      message: "Gagal mengambil data feedback"
+      status: 'error',
+      message: 'Gagal mengambil data feedback',
     });
   }
 };
@@ -27,12 +25,15 @@ export const createFeedback = async (req, res) => {
     const { id_pemesanan, email, pesan, rating } = req.body;
 
     if (!id_pemesanan || !email || !pesan || !rating) {
-      return res.status(400).json({ message: "Data tidak lengkap" });
+      return res.status(400).json({ message: 'Data tidak lengkap' });
     }
 
     let gambar_feedback = null;
+    let public_id = null;
+
     if (req.file) {
-      gambar_feedback = req.file.path; // URL Cloudinary
+      gambar_feedback = req.file.path; // URL
+      public_id = req.file.filename; // public_id Cloudinary
     }
 
     await addFeedback({
@@ -40,43 +41,33 @@ export const createFeedback = async (req, res) => {
       email,
       feedback: pesan,
       gambar_feedback,
+      public_id,
       rating,
     });
 
-    res.status(201).json({
-      message: "Feedback berhasil ditambahkan",
-    });
+    res.status(201).json({ message: 'Feedback berhasil ditambahkan' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Terjadi kesalahan server" });
+    res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 };
 
-
 // DELETE feedback by ID
 export const deleteFeedbackById = async (req, res) => {
-  try {
-    const { id_feedback } = req.params;
+  const { id_feedback } = req.params;
 
-    if (!id_feedback) {
-      return res.status(400).json({
-        status: "error",
-        message: "ID feedback tidak ditemukan",
-      });
-    }
-
-    await deleteFeedback(id_feedback);
-
-    res.status(200).json({
-      status: "success",
-      message: "Feedback dan gambar berhasil dihapus",
-    });
-
-  } catch (error) {
-    console.error("Error delete feedback:", error);
-    res.status(500).json({
-      status: "error",
-      message: error.message || "Gagal menghapus feedback",
+  if (!id_feedback) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'ID feedback tidak ditemukan',
     });
   }
+  const { public_id } = result[0];
+
+  if (public_id) {
+    await cloudinary.uploader.destroy(public_id);
+  }
+  deleteFeedback(id_feedback, (err2) => {
+    if (err2) return res.status(500).json(err2);
+    res.json({ message: 'Feedback berhasil dihapus' });
+  });
 };
