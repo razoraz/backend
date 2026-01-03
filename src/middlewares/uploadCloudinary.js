@@ -12,6 +12,8 @@ const storage = new CloudinaryStorage({
       folder = "menu";
     } else if (req.originalUrl.includes("/feedback")) {
       folder = "feedback";
+    } else if (req.originalUrl.includes("/event")) {
+      folder = "event";
     }
 
     return {
