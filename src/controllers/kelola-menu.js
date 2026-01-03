@@ -1,13 +1,6 @@
-import cloudinary from "../config/cloudinary.js";
-import { getAllKategori } from "../models/kategori_menu.js";
-import {
-  tambahMenu,
-  getAllMenu,
-  searchAndFilterMenu,
-  hapusMenu,
-  updateMenuById,
-  getMenuById,
-} from "../models/menu.js";
+import cloudinary from '../config/cloudinary.js';
+import { getAllKategori } from '../models/kategori_menu.js';
+import { tambahMenu, getAllMenu, searchAndFilterMenu, hapusMenu, updateMenuById, getMenuById } from '../models/menu.js';
 
 // =======================
 // 🍽️ Ambil Semua Menu
@@ -23,7 +16,7 @@ export const getMenu = (req, res) => {
 // =======================
 export const getKategori = (req, res) => {
   getAllKategori((err, result) => {
-    if (err) return res.status(500).json({ message: "Gagal ambil kategori", error: err });
+    if (err) return res.status(500).json({ message: 'Gagal ambil kategori', error: err });
     res.json(result);
   });
 };
@@ -34,11 +27,13 @@ export const getKategori = (req, res) => {
 export const addMenu = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: "Gambar wajib diupload" });
+      return res.status(400).json({ message: 'Gambar wajib diupload' });
     }
 
     const upload = await cloudinary.uploader.upload(req.file.path, {
-      folder: "menu",
+      folder: 'menu',
+      public_id: result[0].public_id, // overwrite
+      overwrite: true,
     });
 
     const data = {
@@ -49,10 +44,10 @@ export const addMenu = async (req, res) => {
 
     tambahMenu(data, (err) => {
       if (err) throw err;
-      res.json({ message: "Menu berhasil ditambahkan" });
+      res.json({ message: 'Menu berhasil ditambahkan' });
     });
   } catch (err) {
-    res.status(500).json({ message: "Upload gagal", error: err });
+    res.status(500).json({ message: 'Upload gagal', error: err });
   }
 };
 
@@ -64,7 +59,7 @@ export const deleteMenu = (req, res) => {
 
   getMenuById(id, async (err, result) => {
     if (err || !result.length) {
-      return res.status(404).json({ message: "Menu tidak ditemukan" });
+      return res.status(404).json({ message: 'Menu tidak ditemukan' });
     }
 
     const { public_id } = result[0];
@@ -75,7 +70,7 @@ export const deleteMenu = (req, res) => {
 
     hapusMenu(id, (err2) => {
       if (err2) return res.status(500).json(err2);
-      res.json({ message: "Menu berhasil dihapus" });
+      res.json({ message: 'Menu berhasil dihapus' });
     });
   });
 };
@@ -88,7 +83,7 @@ export const updateMenu = async (req, res) => {
 
   getMenuById(id, async (err, result) => {
     if (err || !result.length) {
-      return res.status(404).json({ message: "Menu tidak ditemukan" });
+      return res.status(404).json({ message: 'Menu tidak ditemukan' });
     }
 
     let gambar_menu = null;
@@ -102,21 +97,25 @@ export const updateMenu = async (req, res) => {
 
       // Upload baru
       const upload = await cloudinary.uploader.upload(req.file.path, {
-        folder: "menu",
+        folder: 'menu',
       });
 
       gambar_menu = upload.secure_url;
       public_id = upload.public_id;
     }
 
-    updateMenuById(id, {
-      ...req.body,
-      gambar_menu,
-      public_id,
-    }, (err2) => {
-      if (err2) return res.status(500).json(err2);
-      res.json({ message: "Menu berhasil diupdate" });
-    });
+    updateMenuById(
+      id,
+      {
+        ...req.body,
+        gambar_menu,
+        public_id,
+      },
+      (err2) => {
+        if (err2) return res.status(500).json(err2);
+        res.json({ message: 'Menu berhasil diupdate' });
+      }
+    );
   });
 };
 
