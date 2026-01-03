@@ -4,12 +4,21 @@ import cloudinary from "../config/cloudinary.js";
 
 const storage = new CloudinaryStorage({
   cloudinary,
-  params: {
-    folder: "feedback",
-    allowed_formats: ["jpg", "jpeg", "png"],
-    public_id: (req, file) => {
-      return `feedback-${Date.now()}`;
-    },
+  params: (req, file) => {
+    // Tentukan folder berdasarkan endpoint
+    let folder = "others";
+
+    if (req.originalUrl.includes("/menu")) {
+      folder = "menu";
+    } else if (req.originalUrl.includes("/feedback")) {
+      folder = "feedback";
+    }
+
+    return {
+      folder,
+      allowed_formats: ["jpg", "jpeg", "png"],
+      public_id: `${folder}-${Date.now()}`,
+    };
   },
 });
 
