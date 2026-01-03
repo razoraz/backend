@@ -1,3 +1,4 @@
+import cloudinary from '../config/cloudinary.js';
 import {
   getAllEventModel,
   getEventByIdModel,
@@ -7,59 +8,96 @@ import {
 } from '../models/event.js';
 
 // GET ALL
-export const getAllEvent = (req, res) => {
-  getAllEventModel((err, data) => {
-    if (err) return res.status(500).json({ message: err.message });
-    res.json(data);
-  });
+export const getAllEvent = async (req, res) => {
+  try {
+    const events = await getAllEventModel();
+    res.json(events);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 // GET BY ID
-export const getEventById = (req, res) => {
-  getEventByIdModel(req.params.id, (err, data) => {
-    if (err) return res.status(500).json({ message: err.message });
-    res.json(data[0]);
-  });
-};
-
-// ADD
-export const addEvent = (req, res) => {
-  const { judul, deskripsi } = req.body;
-  const gambar = req.file ? req.file.filename : null;
-
-  if (!gambar) {
-    return res.status(400).json({ message: 'Gambar wajib diupload' });
+export const getEventById = async (req, res) => {
+  try {
+    const event = await getEventByIdModel(req.params.id);
+    res.json(event);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
+};
 
-  addEventModel([judul, deskripsi, gambar], (err) => {
-    if (err) return res.status(500).json({ message: err.message });
+// ADD EVENT
+export const addEvent = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: "Gambar wajib diupload" });
+
+    // Upload ke Cloudinary
+    const upload = await cloudinary.uploader.upload(req.file.path, {
+      folder: 'event',
+    });
+
+    const data = {
+      judul: req.body.judul,
+      deskripsi: req.body.deskripsi,
+      gambar_url: upload.secure_url,
+      public_id: upload.public_id,
+    };
+
+    await addEventModel(data);
     res.json({ message: 'Event berhasil ditambahkan' });
-  });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
-// UPDATE
-export const updateEvent = (req, res) => {
-  const { judul, deskripsi } = req.body;
-  const gambar = req.file ? req.file.filename : req.body.gambar_lama;
+// UPDATE EVENT
+export const updateEvent = async (req, res) => {
+  try {
+    const event = await getEventByIdModel(req.params.id);
+    if (!event) return res.status(404).json({ message: 'Event tidak ditemukan' });
 
-  updateEventModel(req.params.id, [judul, deskripsi, gambar], (err) => {
-    if (err) return res.status(500).json({ message: err.message });
-    res.json({ message: 'Event berhasil diupdate' });
-  });
-};
+    let gambar_url = event.gambar_event;
+    let public_id = event.public_id;
 
-// DELETE
-export const deleteEvent = (req, res) => {
-  const { id } = req.params;
+    if (req.file) {
+      // Hapus gambar lama di Cloudinary
+      if (public_id) await cloudinary.uploader.destroy(public_id);
 
-  deleteEventModel(id, (err) => {
-    if (err) {
-      console.error("Error hapus event:", err);
-      return res.status(500).json({
-        message: err.message || "Gagal menghapus event",
+      // Upload gambar baru
+      const upload = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'event',
       });
+      gambar_url = upload.secure_url;
+      public_id = upload.public_id;
     }
 
-    res.json({ message: "Event berhasil dihapus!" });
-  });
+    const data = {
+      judul: req.body.judul,
+      deskripsi: req.body.deskripsi,
+      gambar_url,
+      public_id,
+    };
+
+    await updateEventModel(req.params.id, data);
+    res.json({ message: 'Event berhasil diupdate' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// DELETE EVENT
+export const deleteEvent = async (req, res) => {
+  try {
+    const { deleteResult, public_id } = await deleteEventModel(req.params.id);
+
+    // Hapus gambar Cloudinary
+    if (public_id) {
+      await cloudinary.uploader.destroy(public_id);
+    }
+
+    res.json({ message: "Event berhasil dihapus" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
