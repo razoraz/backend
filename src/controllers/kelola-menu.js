@@ -84,15 +84,14 @@ export const updateMenu = async (req, res) => {
     let public_id = null;
 
     if (req.file) {
-      // Hapus gambar lama pakai public_id dari DB
-      const { public_id } = result[0];
-      if (result.public_id) {
+      // ✅ HAPUS GAMBAR LAMA (INI YANG TADI GAGAL)
+      if (result[0].public_id) {
         await cloudinary.uploader.destroy(result[0].public_id);
       }
 
-      // Ambil hasil upload dari middleware (JANGAN upload lagi)
-      gambar_menu = req.file.path;     // secure_url
-      public_id = req.file.filename;   // public_id
+      // ✅ AMBIL HASIL UPLOAD DARI MIDDLEWARE
+      gambar_menu = req.file.path;
+      public_id = req.file.filename;
     }
 
     updateMenuById(
