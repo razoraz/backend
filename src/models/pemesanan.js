@@ -203,7 +203,7 @@ export const getDetailStrukModel = (id_pemesanan) => {
         d.id_detail,
         d.jumlah,
         d.subtotal,
-        d.catatan
+        d.catatan,
 
         m.nama_menu
 
