@@ -1,6 +1,4 @@
 import db from "../config/db.js";
-import fs from "fs";
-import path from "path";
 
 // =======================
 // GET semua feedback
@@ -57,37 +55,12 @@ export const addFeedback = (data) => {
 // =======================
 export const deleteFeedback = (id_feedback) => {
   return new Promise((resolve, reject) => {
-    // 1. Ambil nama file feedback
-    const getSql = "SELECT gambar_feedback FROM feedback WHERE id_feedback = ?";
-    db.query(getSql, [id_feedback], (err, results) => {
-      if (err) return reject(err);
-      if (results.length === 0)
-        return reject(new Error("Feedback tidak ditemukan"));
-
-      const gambar = results[0].gambar_feedback;
-
-      // 2. Hapus data feedback
-      const deleteSql = "DELETE FROM feedback WHERE id_feedback = ?";
-      db.query(deleteSql, [id_feedback], (deleteErr, deleteResult) => {
-        if (deleteErr) return reject(deleteErr);
-
-        // 3. Hapus file gambar jika ada
-        if (gambar) {
-          const filePath = path.join(
-            process.cwd(),
-            "uploads",
-            "feedback",
-            gambar
-          );
-
-          if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-          }
-        }
-
-        resolve(deleteResult);
-      });
+    const sql = "DELETE FROM feedback WHERE id_feedback = ?";
+    db.query(sql, [id_feedback], (err, result) => {
+      if (err) reject(err);
+      resolve(result);
     });
   });
 };
+
 
