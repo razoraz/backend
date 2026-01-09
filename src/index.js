@@ -1,3 +1,4 @@
+// Route Pegawai
 import authRoutes from './routes/admin-route.js';
 import menuRoutes from './routes/menu-route.js';
 import reservasiRoutes from './routes/reservasi-route.js';
@@ -8,10 +9,16 @@ import feedbackRoutes from './routes/feedback-route.js';
 import berandaRoutes from './routes/beranda-route.js';
 import eventRoutes from './routes/event-route.js';
 import laporanRoutes from './routes/laporan-route.js';
+
+// Route Pelanggan
 import berandaPelangganRoutes from './routes/berandaPelanggan-route.js';
+import menuPelangganRoutes from './routes/menuPelanggan-route.js';
+
+// Route Webhook
 import webhookRoutes from './routes/webhook-route.js';
 
 export const initRoutes = (app) => {
+  // API Routes Pegawai
   app.use('/api/auth', authRoutes);
   app.use('/api/menu', menuRoutes);
   app.use('/api/pemesanan', pemesananRoutes);
@@ -22,6 +29,11 @@ export const initRoutes = (app) => {
   app.use('/api/beranda', berandaRoutes);
   app.use('/api/event', eventRoutes);
   app.use('/api/laporan', laporanRoutes);
+
+  // API Routes Pelanggan
   app.use('/api/beranda-pelanggan', berandaPelangganRoutes);
+  app.use('/api/menu-pelanggan', menuPelangganRoutes);
+
+  // API Routes Webhook
   app.use('/api/webhook', webhookRoutes);
 };
