@@ -1,11 +1,6 @@
 import express from "express";
 import upload from "../middlewares/uploadCloudinary.js";
-import {
-  tambahKategori,
-  hapusKategori,
-  perbaruiKategori,
-} from "../controllers/kelola-kategori.js";
-  
+
 import {
   addMenu,
   getKategori,
@@ -24,9 +19,6 @@ const router = express.Router();
 
 // GET semua kategori
 router.get("/kategori", getKategori);
-router.post("/kategori", tambahKategori);
-router.delete("/kategori/:id_kategori", hapusKategori);
-router.put("/kategori/:id_kategori", perbaruiKategori);
 
 // GET semua menu
 router.get("/menu", getMenu);
