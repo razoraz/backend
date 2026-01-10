@@ -13,3 +13,5 @@ router.get("/", getKategori);
 router.post("/", tambahKategori);
 router.delete("/:id_kategori", hapusKategori);
 router.put("/:id_kategori", perbaruiKategori);
+
+export default router;
