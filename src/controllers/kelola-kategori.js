@@ -1,4 +1,14 @@
-import { addKategori, deleteKategori, updateKategori } from '../models/kategori_menu.js';
+import { getAllKategori, addKategori, deleteKategori, updateKategori } from '../models/kategori_menu.js';
+
+// =======================
+// 📦 Ambil Semua Kategori
+// =======================
+export const getKategori = (req, res) => {
+  getAllKategori((err, result) => {
+    if (err) return res.status(500).json({ message: 'Gagal ambil kategori', error: err });
+    res.json(result);
+  });
+};
 
 // =======================
 //  ➕ Tambah Kategori
