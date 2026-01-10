@@ -9,7 +9,7 @@ import {
 const router = express.Router();
 
 // GET semua kategori
-router.get("/", getKategori);
-router.post("/", tambahKategori);
+router.get("/kategori-list", getKategori);
+router.post("/kategori-list", tambahKategori);
 router.delete("/:id_kategori", hapusKategori);
 router.put("/:id_kategori", perbaruiKategori);
