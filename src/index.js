@@ -9,6 +9,7 @@ import feedbackRoutes from './routes/feedback-route.js';
 import berandaRoutes from './routes/beranda-route.js';
 import eventRoutes from './routes/event-route.js';
 import laporanRoutes from './routes/laporan-route.js';
+import kategoriRoutes from './routes/kategori-route.js';
 
 // Route Pelanggan
 import berandaPelangganRoutes from './routes/berandaPelanggan-route.js';
@@ -29,7 +30,7 @@ export const initRoutes = (app) => {
   app.use('/api/beranda', berandaRoutes);
   app.use('/api/event', eventRoutes);
   app.use('/api/laporan', laporanRoutes);
-  app.use('/api/kategori', laporanRoutes);
+  app.use('/api/kategori', kategoriRoutes);
 
   // API Routes Pelanggan
   app.use('/api/beranda-pelanggan', berandaPelangganRoutes);
