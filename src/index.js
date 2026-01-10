@@ -29,6 +29,7 @@ export const initRoutes = (app) => {
   app.use('/api/beranda', berandaRoutes);
   app.use('/api/event', eventRoutes);
   app.use('/api/laporan', laporanRoutes);
+  app.use('/api/kategori', laporanRoutes);
 
   // API Routes Pelanggan
   app.use('/api/beranda-pelanggan', berandaPelangganRoutes);
