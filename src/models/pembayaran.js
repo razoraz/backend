@@ -67,7 +67,7 @@ export const updateStatusPembayaran = (
         midtrans_response = ?,
         waktu_bayar = 
           CASE 
-            WHEN ? = 'SUDAH_BAYAR' AND waktu_bayar IS NULL 
+            WHEN ? = 'sudah_bayar' AND waktu_bayar IS NULL 
             THEN NOW()
             ELSE waktu_bayar
           END
