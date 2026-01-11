@@ -50,34 +50,51 @@ export const getPembayaranByPemesananId = (id_pemesanan) => {
 
 // ✅ PERBAIKI: Update status pembayaran
 // ALTERNATIF: Jika hanya ingin update status dan simpan response
-export const updateStatusPembayaran = (order_id, status_pembayaran, midtrans_response = {}) => {
+export const updateStatusPembayaran = (
+  order_id,
+  status_pembayaran,
+  midtrans_response = {}
+) => {
   return new Promise((resolve, reject) => {
-    console.log(`📌 [MODEL] Updating payment status only: ${order_id} -> ${status_pembayaran}`);
-    
+    console.log(
+      `📌 [MODEL] Updating payment status: ${order_id} -> ${status_pembayaran}`
+    );
+
     const sql = `
       UPDATE pembayaran
       SET 
-        status_pembayaran = ?, 
+        status_pembayaran = ?,
         midtrans_response = ?,
-        waktu_bayar = NOW()
+        waktu_bayar = 
+          CASE 
+            WHEN ? = 'SUDAH_BAYAR' AND waktu_bayar IS NULL 
+            THEN NOW()
+            ELSE waktu_bayar
+          END
       WHERE order_id = ?
     `;
 
-    db.query(sql, [
-      status_pembayaran, 
-      JSON.stringify(midtrans_response), 
-      order_id
-    ], (err, result) => {
-      if (err) {
-        console.error(`❌ [MODEL] Error:`, err);
-        reject(err);
-      } else {
-        console.log(`✅ [MODEL] Update successful`);
-        resolve(result);
+    db.query(
+      sql,
+      [
+        status_pembayaran,
+        JSON.stringify(midtrans_response),
+        status_pembayaran,
+        order_id,
+      ],
+      (err, result) => {
+        if (err) {
+          console.error('❌ [MODEL] Error:', err);
+          reject(err);
+        } else {
+          console.log('✅ [MODEL] Update successful');
+          resolve(result);
+        }
       }
-    });
+    );
   });
 };
+
 
 export const updateStatusPembayaranAdmin = (
   id_pemesanan,
