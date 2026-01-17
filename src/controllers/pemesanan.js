@@ -136,7 +136,7 @@ export const tambahPemesananLengkap = async (req, res) => {
 
       // Optional: direct QRIS
       if (transaction.token) {
-        redirect_url = `https://app.sandbox.midtrans.com/snap/v4/redirection/${transaction.token}#/other-qris`;
+        redirect_url = `https://app.midtrans.com/snap/v4/redirection/${transaction.token}#/other-qris`;
       }
 
       await addPembayaran({
