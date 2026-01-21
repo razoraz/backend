@@ -41,7 +41,7 @@ export const getAllReservasiWithPayment = () => {
         ON p.id_pemesanan = pb.id_pemesanan
       LEFT JOIN metode_pembayaran mp
         ON pb.id_metode = mp.id_metode
-      ORDER BY r.tanggal_dibuat DESC, r.id_reservasi ASC
+      ORDER BY r.tanggal_dibuat DESC, r.id_reservasi DESC
     `;
 
     db.query(sql, (err, rows) => {
